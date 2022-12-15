@@ -4,6 +4,7 @@ This small and compact tool disables MPO on windows that causes issues with AMD 
 https://learn.microsoft.com/en-us/windows-hardware/drivers/display/multiplane-overlay-support
 
 1.
+(RUN AS ADMIN)
 The tool checks if you have the latest GPU Driver that fixes the blackscreens.
 If you don't the download button for the required GPU Driver will be come availale.
 
