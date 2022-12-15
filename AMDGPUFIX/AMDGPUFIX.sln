@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AMDGPUFIX", "AMDGPUFIX\AMDGPUFIX.csproj", "{8A2232C6-BC75-494D-8913-A014323EB27B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8A2232C6-BC75-494D-8913-A014323EB27B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A2232C6-BC75-494D-8913-A014323EB27B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A2232C6-BC75-494D-8913-A014323EB27B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A2232C6-BC75-494D-8913-A014323EB27B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {452C807D-B1F3-4E54-93C7-3BABCB6AFE0D}
+	EndGlobalSection
+EndGlobal
