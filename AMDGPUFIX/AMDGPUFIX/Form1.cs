@@ -1,8 +1,10 @@
-﻿using MaterialSkin.Controls;
+﻿using MaterialSkin;
+using MaterialSkin.Controls;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Management;
+using System.Windows.Forms;
 
 namespace AMDGPUFIX
 {
@@ -11,18 +13,40 @@ namespace AMDGPUFIX
         // Globals
         string GPUName = "";
         string GPUVersion = "";
+        string url = string.Empty;
         static RegistryKey defaultKey = null;
         bool Ready = false;
+        ULPS ULPS = new ULPS();
+        public readonly MaterialSkinManager materialSkinManager;
         // End
 
         public Form1()
         {
             InitializeComponent();
+            // Set material colors
+            materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.EnforceBackcolorOnAllComponents = true;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
+            // continue...
             LoadGPUDriverVer();
-            DriverCompare();
+            BrandCompare();
+            DetectULPS();
             DetectMPO();
-            Ready= true;
+            Ready = true;
         }
+
+        //
+        // Detect Ultra-Low Power State
+        // 
+        private void DetectULPS()
+        {
+            if (!materialLabel3.Visible)
+                materialSwitch2.Checked = ULPS.CheckULPS();
+        }
+        //
+        // End
+        //
 
         //
         // Detect MultiPlane-Overlay
@@ -44,14 +68,19 @@ namespace AMDGPUFIX
         //
 
         //
-        // Driver Compare
+        // GPU Brand Compare
         //
-        private void DriverCompare()
+        private void BrandCompare()
         {
-            string current = GPUVersion.Replace(".", "");
-            string expected = "3101202910015";
-            materialLabel2.HighEmphasis = (current != expected);
-            materialFloatingActionButton1.Enabled = (current != expected);
+            // AMD Brand
+            if (GPUName.Contains("AMD"))
+            {
+                url = "https://www.amd.com/en/support";
+                materialLabel3.Visible = false;
+            }
+            // NVIDIA Brand
+            else
+                url = "https://www.nvidia.com/download/index.aspx";
         }
         //
         // End
@@ -84,10 +113,23 @@ namespace AMDGPUFIX
         //
 
         //
-        // Download Latest Driver with Black screen fix
+        // Download Latest Driver
         //
         private void materialFloatingActionButton1_Click(object sender, EventArgs e) =>
-            Process.Start("https://drivers.amd.com/drivers/whql-amd-software-adrenalin-edition-22.11.2-win10-win11-dec8.exe");
+            Process.Start(url);
+        //
+        // End
+        //
+
+        //
+        // ULPS Switch
+        //
+        private void materialSwitch2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!Ready) return;
+            ULPS.ULPSHandler(materialSwitch2.Checked);
+            materialFloatingActionButton2.Visible = true;
+        }
         //
         // End
         //
@@ -113,6 +155,33 @@ namespace AMDGPUFIX
         //
         private void materialFloatingActionButton2_Click(object sender, EventArgs e) =>
             Process.Start("ShutDown", "/r");
+        //
+        // End
+        //
+
+        //
+        // ULPS Info Button
+        //
+        private void materialButton1_Click(object sender, EventArgs e) =>
+            Process.Start("https://github.com/RedDot-3ND7355/AMD-GPU-FIX/wiki/ULPS");
+        //
+        // End
+        //
+
+        //
+        // MPO Info Button
+        //
+        private void materialButton2_Click(object sender, EventArgs e) =>
+            Process.Start("https://github.com/RedDot-3ND7355/AMD-GPU-FIX/wiki/MPO");
+        //
+        // End
+        //
+
+        //
+        // Kill Process when closed
+        //
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e) =>
+            Process.GetCurrentProcess().Kill();
         //
         // End
         //
