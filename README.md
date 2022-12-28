@@ -1,19 +1,36 @@
-# AMD-GPU-FIX
+# MPO-GPU-FIX
 
-This small and compact tool disables MPO on windows that causes issues with AMD Drivers.
-https://learn.microsoft.com/en-us/windows-hardware/drivers/display/multiplane-overlay-support
+This small and compact tool disables MPO on windows that causes issues with GPU Drivers.
+Check out the WIKI for more info: https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki
 
-1.
-(RUN AS ADMIN)
-The tool checks if you have the latest GPU Driver that fixes the blackscreens.
-If you don't the download button for the required GPU Driver will be come availale.
+What this tool does:
+- Checks your GPU Name in use
+- Checks your GPU Driver version
+- Toggles ULPS/MPO via the Registry
+- Gracefully Reboots your pc
+- Download redirects to your brand's support page for latest drivers
 
-2.
-Toggle ON the fix
+1. Run the tool.
 
-3.
-The quick reboot button will become available, you only need to press it.
+2. Toggle ON the fix.
+
+(Optional) ULPS Toggle will be available for AMD GPU users. (also requires restart for changes to apply)
+
+3. Hit the reboot button.
+
 
 That's it!
 
 Note: To restore MPO, just open the tool and Toggle off the fix then reboot once again.
+
+
+Changelog
+
+v2(latest):
+- ULPS Toggle added
+- Run as admin only
+- All-in-one executeable
+- Proper GPU Brand detection
+
+v1(Initial release):
+- MPO Toggle
