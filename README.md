@@ -3,6 +3,9 @@
 This small and compact tool disables MPO on windows that causes issues with GPU Drivers.
 Check out the WIKI for more info: https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki
 
+Already Disabled MPO and still getting performance issues and such?
+Head here: https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/Still-getting-issues%3F
+
 What this tool does:
 - Checks your GPU Name in use
 - Checks your GPU Driver version
