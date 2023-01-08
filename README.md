@@ -9,7 +9,7 @@ Head here: https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/Still-getting-issu
 What this tool does:
 - Checks your GPU Name in use
 - Checks your GPU Driver version
-- Toggles ULPS/MPO via the Registry
+- Toggles ULPS/MPO/TDR via the Registry
 - Gracefully Reboots your pc
 - Download redirects to your brand's support page for latest drivers
 
@@ -18,6 +18,8 @@ What this tool does:
 2. Toggle ON the fix.
 
 (Optional) ULPS Toggle will be available for AMD GPU users. (also requires restart for changes to apply)
+
+(Optional) TDR Fix Toggle will be available for those having TDR related errors when playing games. (also requires restart for changes to apply)
 
 3. Hit the reboot button.
 
@@ -29,7 +31,10 @@ Note: To restore MPO, just open the tool and Toggle off the fix then reboot once
 
 Changelog
 
-v2(latest):
+v3(latest release):
+- TDR Fix toggle added
+
+v2(second release):
 - ULPS Toggle added
 - Run as admin only
 - All-in-one executeable
