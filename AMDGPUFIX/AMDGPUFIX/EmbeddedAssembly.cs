@@ -4,7 +4,6 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Windows.Forms;
 
 public class EmbeddedAssembly
 {
@@ -23,7 +22,7 @@ public class EmbeddedAssembly
                     return TempArrray.ToArray();
                 }
             }
-        } 
+        }
         else
         {
             Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(ZippedFile);

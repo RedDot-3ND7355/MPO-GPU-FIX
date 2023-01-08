@@ -15,6 +15,7 @@ namespace AMDGPUFIX
         string GPUVersion = "";
         string url = string.Empty;
         static RegistryKey defaultKey = null;
+        static RegistryKey tdrKey = null;
         bool Ready = false;
         ULPS ULPS = new ULPS();
         public readonly MaterialSkinManager materialSkinManager;
@@ -31,10 +32,30 @@ namespace AMDGPUFIX
             // continue...
             LoadGPUDriverVer();
             BrandCompare();
+            DetectTDR();
             DetectULPS();
             DetectMPO();
             Ready = true;
         }
+
+        //
+        // Detect Timeout detection and recovery
+        //
+        private void DetectTDR()
+        {
+            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            tdrKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", writable: true);
+            if (tdrKey.GetValue("TdrDelay") != null)
+            {
+                string val = tdrKey.GetValue("TdrDelay").ToString();
+                if (int.TryParse(val, out int result))
+                    if (result == 10)
+                        materialSwitch3.Checked = true;
+            }
+        }
+        //
+        // End
+        //
 
         //
         // Detect Ultra-Low Power State
@@ -122,6 +143,22 @@ namespace AMDGPUFIX
         //
 
         //
+        // TDR Switch
+        //
+        private void materialSwitch3_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!Ready) return;
+            if (materialSwitch3.Checked)
+                defaultKey.SetValue("TdrDelay", 0x0000000A, RegistryValueKind.DWord);
+            else
+                defaultKey.DeleteValue("TdrDelay");
+            materialFloatingActionButton2.Visible = true;
+        }
+        //
+        // End
+        //
+
+        //
         // ULPS Switch
         //
         private void materialSwitch2_CheckedChanged(object sender, EventArgs e)
@@ -182,6 +219,15 @@ namespace AMDGPUFIX
         //
         private void Form1_FormClosed(object sender, FormClosedEventArgs e) =>
             Process.GetCurrentProcess().Kill();
+        //
+        // End
+        //
+
+        //
+        // TDR Info Button
+        //
+        private void materialButton3_Click(object sender, EventArgs e) =>
+            Process.Start("https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/TDR");
         //
         // End
         //
