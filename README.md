@@ -1,3 +1,21 @@
+## Having issues after installing a (new) gpu in your system?
+
+Here's a list of symptoms caused by MPO (a feature added by Microsoft a few years back):
+- Stutters when tabbing out of games (multitasking)
+- Driver crashes/System hangs when using hardware accelerated browsers
+- Driver crashes/System hangs when trying to stream
+- Anything fullscreen would cause huge stutters and can lead to crashes and hangs
+- Screen flickering nonstop
+
+Then I got the tool for you!
+
+Why?
+
+Because I was also plagued by these issues and found out about MPO 2 weeks after enduring pure torture of having
+a decent pc not being able to do jacksh**t. So I decided to help everyone out by making the process a lot easier.
+I know that NVIDIA released Reg files to disable/restore MPO, but I wanted to make a user friendly experience.
+Also because I got time on my hand during winter x')
+
 # MPO-GPU-FIX
 
 This small and compact tool disables MPO on windows that causes issues with GPU Drivers.
