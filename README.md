@@ -1,5 +1,7 @@
 ## Having issues after installing a (new) gpu in your system?
 
+Then this is the tool for you!
+
 Here's a list of symptoms caused by MPO (a feature added by Microsoft a few years back):
 - Stutters when tabbing out of games (multitasking)
 - Driver crashes/System hangs when using hardware accelerated browsers
@@ -7,9 +9,14 @@ Here's a list of symptoms caused by MPO (a feature added by Microsoft a few year
 - Anything fullscreen would cause huge stutters and can lead to crashes and hangs
 - Screen flickering nonstop
 
-Then I got the tool for you!
+List of GPU affected by MPO as reported by users:
+- NVIDIA RTX 30 Series
+- AMD RX 5000 Series
+- AMD RX 6000 Series
+- AMD RX 7000 Series
+- And maybe more!
 
-Why?
+Why did I make this tool?
 
 Because I was also plagued by these issues and found out about MPO 2 weeks after enduring pure torture of having
 a decent pc not being able to do jacksh**t. So I decided to help everyone out by making the process a lot easier.
