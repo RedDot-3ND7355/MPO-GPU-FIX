@@ -54,7 +54,7 @@ That's it!
 Note: To restore MPO, just open the tool and Toggle off the fix then reboot once again.
 
 
-Changelog
+## Changelog
 
 v3(latest release):
 - TDR Fix toggle added
