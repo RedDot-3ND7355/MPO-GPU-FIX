@@ -100,8 +100,21 @@ namespace AMDGPUFIX
                 materialLabel3.Visible = false;
             }
             // NVIDIA Brand
-            else
+            else if (GPUName.Contains("NVIDIA"))
+            {
                 url = "https://www.nvidia.com/download/index.aspx";
+                materialLabel3.Text = "";
+            }
+            else if (GPUName.Contains("INTEL"))
+            {
+                url = "https://www.intel.ca/content/www/ca/en/download/726609/intel-arc-iris-xe-graphics-whql-windows.html?";
+                materialLabel3.Text = "INTEL GPU";
+            }
+            else
+            {
+                materialFloatingActionButton1.Enabled = false;
+                materialLabel3.Text = "UNKWN GPU";
+            }
         }
         //
         // End
@@ -149,9 +162,9 @@ namespace AMDGPUFIX
         {
             if (!Ready) return;
             if (materialSwitch3.Checked)
-                defaultKey.SetValue("TdrDelay", 0x0000000A, RegistryValueKind.DWord);
+                tdrKey.SetValue("TdrDelay", 0x0000000A, RegistryValueKind.DWord);
             else
-                defaultKey.DeleteValue("TdrDelay");
+                tdrKey.DeleteValue("TdrDelay");
             materialFloatingActionButton2.Visible = true;
         }
         //

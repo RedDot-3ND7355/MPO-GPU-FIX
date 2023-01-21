@@ -56,7 +56,11 @@ Note: To restore MPO, just open the tool and Toggle off the fix then reboot once
 
 ## Changelog
 
-v3(latest release):
+v3.1(hotfix):
+- (Bugfix) TDR Fix Toggle was broken
+- Added INTEL ARC GPU detection & Unknown brand
+
+v3(third release):
 - TDR Fix toggle added
 
 v2(second release):
