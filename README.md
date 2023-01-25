@@ -56,6 +56,10 @@ Note: To restore MPO, just open the tool and Toggle off the fix then reboot once
 
 ## Changelog
 
+v3.2(hotfix):
+- (Bugfix) GPU Label for non AMD was out of bounds
+- Reworked GPU Get Name & Version
+
 v3.1(hotfix):
 - (Bugfix) TDR Fix Toggle was broken
 - Added INTEL ARC GPU detection & Unknown brand

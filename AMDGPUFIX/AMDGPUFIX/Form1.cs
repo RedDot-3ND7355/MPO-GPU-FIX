@@ -105,11 +105,13 @@ namespace AMDGPUFIX
                 url = "https://www.nvidia.com/download/index.aspx";
                 materialLabel3.Text = "";
             }
+            // INTEL Brand
             else if (GPUName.Contains("INTEL"))
             {
                 url = "https://www.intel.ca/content/www/ca/en/download/726609/intel-arc-iris-xe-graphics-whql-windows.html?";
                 materialLabel3.Text = "INTEL GPU";
             }
+            // Unknown Brand
             else
             {
                 materialFloatingActionButton1.Enabled = false;
@@ -123,21 +125,32 @@ namespace AMDGPUFIX
         //
         // Load GPU Driver Version
         //
-        ManagementObjectSearcher gpusearcher = new ManagementObjectSearcher("SELECT * FROM Win32_DisplayConfiguration");
         ManagementObjectSearcher drvsearcher = new ManagementObjectSearcher("SELECT * FROM Win32_VideoController");
         private void LoadGPUDriverVer()
         {
-            // GPU Name
-            foreach (ManagementObject mo in gpusearcher.Get())
-                foreach (PropertyData property in mo.Properties)
-                    if (property.Name == "DeviceName")
-                        GPUName = property.Value.ToString();
-            // End
-            // GPU Driver
+            // GPU Name & Driver
             foreach (ManagementObject mo in drvsearcher.Get())
+            {
                 foreach (PropertyData property in mo.Properties)
+                {
+                    // Get GPUName 
+                    if (property.Name == "Name")
+                        GPUName = property.Value.ToString();
+                    // Get GPUVersion
                     if (property.Name == "DriverVersion")
                         GPUVersion = property.Value.ToString();
+                    // Validate GPU
+                    if (property.Name == "PNPDeviceID")
+                        if (!property.Value.ToString().Contains("PCI"))
+                        {
+                            GPUVersion = "";
+                            GPUName = "";
+                        }
+                        else break;
+                }
+                if (GPUVersion.Length > 0 && GPUName.Length > 0)
+                    break;
+            }
             // End
             materialLabel1.Text += GPUName;
             materialLabel2.Text += GPUVersion;

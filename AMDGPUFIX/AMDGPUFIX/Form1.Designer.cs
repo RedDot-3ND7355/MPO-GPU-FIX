@@ -171,7 +171,7 @@
             this.materialLabel3.Location = new System.Drawing.Point(19, 192);
             this.materialLabel3.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialLabel3.Name = "materialLabel3";
-            this.materialLabel3.Size = new System.Drawing.Size(134, 37);
+            this.materialLabel3.Size = new System.Drawing.Size(143, 37);
             this.materialLabel3.TabIndex = 7;
             this.materialLabel3.Text = "NVIDIA GPU";
             this.materialLabel3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -246,9 +246,9 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(366, 283);
+            this.Controls.Add(this.materialLabel3);
             this.Controls.Add(this.materialButton3);
             this.Controls.Add(this.materialSwitch3);
-            this.Controls.Add(this.materialLabel3);
             this.Controls.Add(this.materialButton2);
             this.Controls.Add(this.materialButton1);
             this.Controls.Add(this.materialSwitch2);
