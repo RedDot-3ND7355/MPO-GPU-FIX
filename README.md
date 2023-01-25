@@ -11,6 +11,7 @@ Here's a list of symptoms caused by MPO (a feature added by Microsoft a few year
 
 List of GPU affected by MPO as reported by users:
 - NVIDIA RTX 30 Series
+- NVIDIA GTX 1600 Series
 - AMD RX 5000 Series
 - AMD RX 6000 Series
 - AMD RX 7000 Series
