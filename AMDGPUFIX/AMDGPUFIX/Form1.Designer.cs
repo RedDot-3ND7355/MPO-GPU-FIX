@@ -41,6 +41,8 @@
             this.materialFloatingActionButton1 = new MaterialSkin.Controls.MaterialFloatingActionButton();
             this.materialSwitch3 = new MaterialSkin.Controls.MaterialSwitch();
             this.materialButton3 = new MaterialSkin.Controls.MaterialButton();
+            this.materialSwitch4 = new MaterialSkin.Controls.MaterialSwitch();
+            this.materialButton4 = new MaterialSkin.Controls.MaterialButton();
             this.materialCard1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -89,7 +91,7 @@
             // 
             this.materialSwitch1.AutoSize = true;
             this.materialSwitch1.Depth = 0;
-            this.materialSwitch1.Location = new System.Drawing.Point(165, 192);
+            this.materialSwitch1.Location = new System.Drawing.Point(177, 192);
             this.materialSwitch1.Margin = new System.Windows.Forms.Padding(0);
             this.materialSwitch1.MouseLocation = new System.Drawing.Point(-1, -1);
             this.materialSwitch1.MouseState = MaterialSkin.MouseState.HOVER;
@@ -129,7 +131,7 @@
             this.materialButton1.Depth = 0;
             this.materialButton1.HighEmphasis = true;
             this.materialButton1.Icon = null;
-            this.materialButton1.Location = new System.Drawing.Point(186, 231);
+            this.materialButton1.Location = new System.Drawing.Point(241, 268);
             this.materialButton1.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.materialButton1.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialButton1.Name = "materialButton1";
@@ -155,7 +157,7 @@
             this.materialButton2.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialButton2.Name = "materialButton2";
             this.materialButton2.NoAccentTextColor = System.Drawing.Color.Empty;
-            this.materialButton2.Size = new System.Drawing.Size(49, 36);
+            this.materialButton2.Size = new System.Drawing.Size(54, 36);
             this.materialButton2.TabIndex = 6;
             this.materialButton2.Text = "MPO?";
             this.materialButton2.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
@@ -183,10 +185,10 @@
             this.materialFloatingActionButton2.Depth = 0;
             this.materialFloatingActionButton2.DrawShadows = false;
             this.materialFloatingActionButton2.Icon = global::AMDGPUFIX.Properties.Resources.outline_restart_alt_black_48dp;
-            this.materialFloatingActionButton2.Location = new System.Drawing.Point(295, 203);
+            this.materialFloatingActionButton2.Location = new System.Drawing.Point(297, 238);
             this.materialFloatingActionButton2.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialFloatingActionButton2.Name = "materialFloatingActionButton2";
-            this.materialFloatingActionButton2.Size = new System.Drawing.Size(56, 60);
+            this.materialFloatingActionButton2.Size = new System.Drawing.Size(56, 61);
             this.materialFloatingActionButton2.TabIndex = 3;
             this.materialFloatingActionButton2.UseVisualStyleBackColor = true;
             this.materialFloatingActionButton2.Visible = false;
@@ -229,12 +231,12 @@
             this.materialButton3.Depth = 0;
             this.materialButton3.HighEmphasis = true;
             this.materialButton3.Icon = null;
-            this.materialButton3.Location = new System.Drawing.Point(142, 231);
+            this.materialButton3.Location = new System.Drawing.Point(186, 231);
             this.materialButton3.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.materialButton3.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialButton3.Name = "materialButton3";
             this.materialButton3.NoAccentTextColor = System.Drawing.Color.Empty;
-            this.materialButton3.Size = new System.Drawing.Size(43, 36);
+            this.materialButton3.Size = new System.Drawing.Size(54, 36);
             this.materialButton3.TabIndex = 9;
             this.materialButton3.Text = "TDR?";
             this.materialButton3.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
@@ -242,10 +244,50 @@
             this.materialButton3.UseVisualStyleBackColor = true;
             this.materialButton3.Click += new System.EventHandler(this.materialButton3_Click);
             // 
+            // materialSwitch4
+            // 
+            this.materialSwitch4.AutoSize = true;
+            this.materialSwitch4.Depth = 0;
+            this.materialSwitch4.Location = new System.Drawing.Point(17, 267);
+            this.materialSwitch4.Margin = new System.Windows.Forms.Padding(0);
+            this.materialSwitch4.MouseLocation = new System.Drawing.Point(-1, -1);
+            this.materialSwitch4.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialSwitch4.Name = "materialSwitch4";
+            this.materialSwitch4.Ripple = true;
+            this.materialSwitch4.Size = new System.Drawing.Size(125, 37);
+            this.materialSwitch4.TabIndex = 10;
+            this.materialSwitch4.Text = "HAGS Fix";
+            this.materialSwitch4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.materialSwitch4.UseVisualStyleBackColor = true;
+            this.materialSwitch4.CheckedChanged += new System.EventHandler(this.materialSwitch4_CheckedChanged);
+            // 
+            // materialButton4
+            // 
+            this.materialButton4.AutoSize = false;
+            this.materialButton4.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.materialButton4.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
+            this.materialButton4.Depth = 0;
+            this.materialButton4.HighEmphasis = true;
+            this.materialButton4.Icon = null;
+            this.materialButton4.Location = new System.Drawing.Point(186, 268);
+            this.materialButton4.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+            this.materialButton4.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialButton4.Name = "materialButton4";
+            this.materialButton4.NoAccentTextColor = System.Drawing.Color.Empty;
+            this.materialButton4.Size = new System.Drawing.Size(54, 36);
+            this.materialButton4.TabIndex = 11;
+            this.materialButton4.Text = "HAGS?";
+            this.materialButton4.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
+            this.materialButton4.UseAccentColor = false;
+            this.materialButton4.UseVisualStyleBackColor = true;
+            this.materialButton4.Click += new System.EventHandler(this.materialButton4_Click);
+            // 
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(366, 283);
+            this.ClientSize = new System.Drawing.Size(366, 309);
+            this.Controls.Add(this.materialButton4);
+            this.Controls.Add(this.materialSwitch4);
             this.Controls.Add(this.materialLabel3);
             this.Controls.Add(this.materialButton3);
             this.Controls.Add(this.materialSwitch3);
@@ -262,7 +304,7 @@
             this.Sizable = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "MPO Fix for GPUs";
+            this.Text = "MPO Fix (and more) for GPUs";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.materialCard1.ResumeLayout(false);
             this.materialCard1.PerformLayout();
@@ -285,6 +327,8 @@
         private MaterialSkin.Controls.MaterialLabel materialLabel3;
         private MaterialSkin.Controls.MaterialSwitch materialSwitch3;
         private MaterialSkin.Controls.MaterialButton materialButton3;
+        private MaterialSkin.Controls.MaterialSwitch materialSwitch4;
+        private MaterialSkin.Controls.MaterialButton materialButton4;
     }
 }
 

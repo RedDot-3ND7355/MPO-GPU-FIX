@@ -16,6 +16,7 @@ namespace AMDGPUFIX
         string url = string.Empty;
         static RegistryKey defaultKey = null;
         static RegistryKey tdrKey = null;
+        static RegistryKey hagsKey= null;
         bool Ready = false;
         ULPS ULPS = new ULPS();
         public readonly MaterialSkinManager materialSkinManager;
@@ -35,8 +36,28 @@ namespace AMDGPUFIX
             DetectTDR();
             DetectULPS();
             DetectMPO();
+            DetectHAGS();
             Ready = true;
         }
+
+        //
+        // Detect Hardware GPU Scheduler
+        //
+        private void DetectHAGS()
+        {
+            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            hagsKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", writable: true);
+            if (hagsKey.GetValue("HwSchMode") != null)
+            {
+                string val = hagsKey.GetValue("HwSchMode").ToString();
+                if (int.TryParse(val, out int result))
+                    if (result == 1)
+                        materialSwitch4.Checked = true;
+            }
+        }
+        //
+        // End
+        //
 
         //
         // Detect Timeout detection and recovery
@@ -94,28 +115,31 @@ namespace AMDGPUFIX
         private void BrandCompare()
         {
             // AMD Brand
-            if (GPUName.Contains("AMD"))
+            if (GPUName.Contains("AMD") || GPUName.Contains("Radeon"))
             {
                 url = "https://www.amd.com/en/support";
                 materialLabel3.Visible = false;
             }
             // NVIDIA Brand
-            else if (GPUName.Contains("NVIDIA"))
+            else if (GPUName.Contains("NVIDIA") || GPUName.Contains("RTX") || GPUName.Contains("GTX"))
             {
                 url = "https://www.nvidia.com/download/index.aspx";
-                materialLabel3.Text = "";
+                materialLabel3.Text = "NVIDIA GPU";
+                materialLabel3.Visible = true;
             }
             // INTEL Brand
-            else if (GPUName.Contains("INTEL"))
+            else if (GPUName.Contains("INTEL") || GPUName.Contains("ARC"))
             {
                 url = "https://www.intel.ca/content/www/ca/en/download/726609/intel-arc-iris-xe-graphics-whql-windows.html?";
                 materialLabel3.Text = "INTEL GPU";
+                materialLabel3.Visible = true;
             }
             // Unknown Brand
             else
             {
                 materialFloatingActionButton1.Enabled = false;
                 materialLabel3.Text = "UNKWN GPU";
+                materialLabel3.Visible = true;
             }
         }
         //
@@ -214,6 +238,22 @@ namespace AMDGPUFIX
         //
 
         //
+        // HAGS Switch
+        //
+        private void materialSwitch4_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!Ready) return;
+            if (materialSwitch4.Checked)
+                hagsKey.SetValue("HwSchMode", 0x00000001, RegistryValueKind.DWord);
+            else
+                hagsKey.SetValue("HwSchMode", 0x00000002, RegistryValueKind.DWord);
+            materialFloatingActionButton2.Visible = true;
+        }
+        //
+        // End
+        //
+
+        //
         // Reboot PC Button
         //
         private void materialFloatingActionButton2_Click(object sender, EventArgs e) =>
@@ -254,6 +294,15 @@ namespace AMDGPUFIX
         //
         private void materialButton3_Click(object sender, EventArgs e) =>
             Process.Start("https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/TDR");
+        //
+        // End
+        //
+
+        //
+        // HAGS Info Button
+        //
+        private void materialButton4_Click(object sender, EventArgs e) =>
+            Process.Start("https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/HAGS");
         //
         // End
         //
