@@ -43,6 +43,9 @@
             this.materialButton3 = new MaterialSkin.Controls.MaterialButton();
             this.materialSwitch4 = new MaterialSkin.Controls.MaterialSwitch();
             this.materialButton4 = new MaterialSkin.Controls.MaterialButton();
+            this.materialComboBox1 = new MaterialSkin.Controls.MaterialComboBox();
+            this.materialButton5 = new MaterialSkin.Controls.MaterialButton();
+            this.materialLabel4 = new MaterialSkin.Controls.MaterialLabel();
             this.materialCard1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -91,7 +94,7 @@
             // 
             this.materialSwitch1.AutoSize = true;
             this.materialSwitch1.Depth = 0;
-            this.materialSwitch1.Location = new System.Drawing.Point(177, 192);
+            this.materialSwitch1.Location = new System.Drawing.Point(17, 232);
             this.materialSwitch1.Margin = new System.Windows.Forms.Padding(0);
             this.materialSwitch1.MouseLocation = new System.Drawing.Point(-1, -1);
             this.materialSwitch1.MouseState = MaterialSkin.MouseState.HOVER;
@@ -152,7 +155,7 @@
             this.materialButton2.Depth = 0;
             this.materialButton2.HighEmphasis = true;
             this.materialButton2.Icon = null;
-            this.materialButton2.Location = new System.Drawing.Point(241, 231);
+            this.materialButton2.Location = new System.Drawing.Point(241, 305);
             this.materialButton2.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.materialButton2.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialButton2.Name = "materialButton2";
@@ -170,10 +173,10 @@
             this.materialLabel3.Depth = 0;
             this.materialLabel3.Font = new System.Drawing.Font("Roboto", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
             this.materialLabel3.FontType = MaterialSkin.MaterialSkinManager.fontType.H5;
-            this.materialLabel3.Location = new System.Drawing.Point(19, 192);
+            this.materialLabel3.Location = new System.Drawing.Point(17, 181);
             this.materialLabel3.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialLabel3.Name = "materialLabel3";
-            this.materialLabel3.Size = new System.Drawing.Size(143, 37);
+            this.materialLabel3.Size = new System.Drawing.Size(334, 48);
             this.materialLabel3.TabIndex = 7;
             this.materialLabel3.Text = "NVIDIA GPU";
             this.materialLabel3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -185,7 +188,7 @@
             this.materialFloatingActionButton2.Depth = 0;
             this.materialFloatingActionButton2.DrawShadows = false;
             this.materialFloatingActionButton2.Icon = global::AMDGPUFIX.Properties.Resources.outline_restart_alt_black_48dp;
-            this.materialFloatingActionButton2.Location = new System.Drawing.Point(297, 238);
+            this.materialFloatingActionButton2.Location = new System.Drawing.Point(295, 277);
             this.materialFloatingActionButton2.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialFloatingActionButton2.Name = "materialFloatingActionButton2";
             this.materialFloatingActionButton2.Size = new System.Drawing.Size(56, 61);
@@ -210,7 +213,7 @@
             // 
             this.materialSwitch3.AutoSize = true;
             this.materialSwitch3.Depth = 0;
-            this.materialSwitch3.Location = new System.Drawing.Point(17, 230);
+            this.materialSwitch3.Location = new System.Drawing.Point(17, 266);
             this.materialSwitch3.Margin = new System.Windows.Forms.Padding(0);
             this.materialSwitch3.MouseLocation = new System.Drawing.Point(-1, -1);
             this.materialSwitch3.MouseState = MaterialSkin.MouseState.HOVER;
@@ -231,7 +234,7 @@
             this.materialButton3.Depth = 0;
             this.materialButton3.HighEmphasis = true;
             this.materialButton3.Icon = null;
-            this.materialButton3.Location = new System.Drawing.Point(186, 231);
+            this.materialButton3.Location = new System.Drawing.Point(186, 305);
             this.materialButton3.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.materialButton3.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialButton3.Name = "materialButton3";
@@ -248,7 +251,7 @@
             // 
             this.materialSwitch4.AutoSize = true;
             this.materialSwitch4.Depth = 0;
-            this.materialSwitch4.Location = new System.Drawing.Point(17, 267);
+            this.materialSwitch4.Location = new System.Drawing.Point(17, 301);
             this.materialSwitch4.Margin = new System.Windows.Forms.Padding(0);
             this.materialSwitch4.MouseLocation = new System.Drawing.Point(-1, -1);
             this.materialSwitch4.MouseState = MaterialSkin.MouseState.HOVER;
@@ -282,13 +285,77 @@
             this.materialButton4.UseVisualStyleBackColor = true;
             this.materialButton4.Click += new System.EventHandler(this.materialButton4_Click);
             // 
+            // materialComboBox1
+            // 
+            this.materialComboBox1.AutoResize = false;
+            this.materialComboBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.materialComboBox1.Depth = 0;
+            this.materialComboBox1.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
+            this.materialComboBox1.DropDownHeight = 118;
+            this.materialComboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.materialComboBox1.DropDownWidth = 121;
+            this.materialComboBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
+            this.materialComboBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.materialComboBox1.FormattingEnabled = true;
+            this.materialComboBox1.Hint = "Shader Cache";
+            this.materialComboBox1.IntegralHeight = false;
+            this.materialComboBox1.ItemHeight = 29;
+            this.materialComboBox1.Items.AddRange(new object[] {
+            "ON",
+            "AMD Optimized",
+            "OFF"});
+            this.materialComboBox1.Location = new System.Drawing.Point(186, 194);
+            this.materialComboBox1.MaxDropDownItems = 4;
+            this.materialComboBox1.MouseState = MaterialSkin.MouseState.OUT;
+            this.materialComboBox1.Name = "materialComboBox1";
+            this.materialComboBox1.Size = new System.Drawing.Size(165, 35);
+            this.materialComboBox1.StartIndex = -1;
+            this.materialComboBox1.TabIndex = 12;
+            this.materialComboBox1.UseTallSize = false;
+            this.materialComboBox1.SelectedIndexChanged += new System.EventHandler(this.materialComboBox1_SelectedIndexChanged);
+            // 
+            // materialButton5
+            // 
+            this.materialButton5.AutoSize = false;
+            this.materialButton5.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.materialButton5.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
+            this.materialButton5.Depth = 0;
+            this.materialButton5.HighEmphasis = true;
+            this.materialButton5.Icon = null;
+            this.materialButton5.Location = new System.Drawing.Point(186, 231);
+            this.materialButton5.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+            this.materialButton5.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialButton5.Name = "materialButton5";
+            this.materialButton5.NoAccentTextColor = System.Drawing.Color.Empty;
+            this.materialButton5.Size = new System.Drawing.Size(165, 36);
+            this.materialButton5.TabIndex = 13;
+            this.materialButton5.Text = "ShaderCache?";
+            this.materialButton5.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
+            this.materialButton5.UseAccentColor = false;
+            this.materialButton5.UseVisualStyleBackColor = true;
+            this.materialButton5.Click += new System.EventHandler(this.materialButton5_Click);
+            // 
+            // materialLabel4
+            // 
+            this.materialLabel4.AutoSize = true;
+            this.materialLabel4.Depth = 0;
+            this.materialLabel4.Font = new System.Drawing.Font("Roboto", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel);
+            this.materialLabel4.FontType = MaterialSkin.MaterialSkinManager.fontType.Caption;
+            this.materialLabel4.Location = new System.Drawing.Point(186, 181);
+            this.materialLabel4.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialLabel4.Name = "materialLabel4";
+            this.materialLabel4.Size = new System.Drawing.Size(105, 14);
+            this.materialLabel4.TabIndex = 14;
+            this.materialLabel4.Text = "AMD Shader Cache";
+            // 
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(366, 309);
+            this.ClientSize = new System.Drawing.Size(366, 354);
+            this.Controls.Add(this.materialLabel3);
+            this.Controls.Add(this.materialComboBox1);
             this.Controls.Add(this.materialButton4);
             this.Controls.Add(this.materialSwitch4);
-            this.Controls.Add(this.materialLabel3);
             this.Controls.Add(this.materialButton3);
             this.Controls.Add(this.materialSwitch3);
             this.Controls.Add(this.materialButton2);
@@ -298,6 +365,8 @@
             this.Controls.Add(this.materialSwitch1);
             this.Controls.Add(this.materialFloatingActionButton1);
             this.Controls.Add(this.materialCard1);
+            this.Controls.Add(this.materialLabel4);
+            this.Controls.Add(this.materialButton5);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "Form1";
@@ -329,6 +398,9 @@
         private MaterialSkin.Controls.MaterialButton materialButton3;
         private MaterialSkin.Controls.MaterialSwitch materialSwitch4;
         private MaterialSkin.Controls.MaterialButton materialButton4;
+        private MaterialSkin.Controls.MaterialComboBox materialComboBox1;
+        private MaterialSkin.Controls.MaterialButton materialButton5;
+        private MaterialSkin.Controls.MaterialLabel materialLabel4;
     }
 }
 

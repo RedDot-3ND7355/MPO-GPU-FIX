@@ -3,7 +3,9 @@ using MaterialSkin.Controls;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Management;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace AMDGPUFIX
@@ -16,9 +18,10 @@ namespace AMDGPUFIX
         string url = string.Empty;
         static RegistryKey defaultKey = null;
         static RegistryKey tdrKey = null;
-        static RegistryKey hagsKey= null;
+        static RegistryKey hagsKey = null;
         bool Ready = false;
         ULPS ULPS = new ULPS();
+        SHADERCACHE shdrch = new SHADERCACHE();
         public readonly MaterialSkinManager materialSkinManager;
         // End
 
@@ -35,6 +38,7 @@ namespace AMDGPUFIX
             BrandCompare();
             DetectTDR();
             DetectULPS();
+            DetectSHADERCACHE();
             DetectMPO();
             DetectHAGS();
             Ready = true;
@@ -79,12 +83,24 @@ namespace AMDGPUFIX
         //
 
         //
-        // Detect Ultra-Low Power State
+        // Detect Ultra-Low Power State (AMD)
         // 
         private void DetectULPS()
         {
             if (!materialLabel3.Visible)
                 materialSwitch2.Checked = ULPS.CheckULPS();
+        }
+        //
+        // End
+        //
+
+        //
+        // Detect Shader Cache Setting (AMD)
+        // 
+        private void DetectSHADERCACHE()
+        {
+            if (!materialLabel3.Visible)
+                materialComboBox1.SelectedIndex = shdrch.CheckShaderCache();
         }
         //
         // End
@@ -209,12 +225,36 @@ namespace AMDGPUFIX
         //
 
         //
-        // ULPS Switch
+        // ULPS Switch (AMD)
         //
         private void materialSwitch2_CheckedChanged(object sender, EventArgs e)
         {
             if (!Ready) return;
             ULPS.ULPSHandler(materialSwitch2.Checked);
+            materialFloatingActionButton2.Visible = true;
+        }
+        //
+        // End
+        //
+
+        //
+        // Shade Cache ComboBox (AMD)
+        // 
+        private void materialComboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!Ready) return;
+            switch (materialComboBox1.SelectedItem.ToString())
+            {
+                case "AMD Optimized":
+                    shdrch.ShaderCacheHandler(1);
+                    break;
+                case "ON":
+                    shdrch.ShaderCacheHandler(0);
+                    break;
+                case "OFF":
+                    shdrch.ShaderCacheHandler(2);
+                    break;
+            }
             materialFloatingActionButton2.Visible = true;
         }
         //
@@ -302,6 +342,15 @@ namespace AMDGPUFIX
         // HAGS Info Button
         //
         private void materialButton4_Click(object sender, EventArgs e) =>
+            Process.Start("https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/HAGS");
+        //
+        // End
+        //
+
+        //
+        // SHADER CACHE Info Button
+        //
+        private void materialButton5_Click(object sender, EventArgs e) =>
             Process.Start("https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/HAGS");
         //
         // End
