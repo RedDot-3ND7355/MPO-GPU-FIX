@@ -35,7 +35,7 @@ Head here: https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/Still-getting-issu
 What this tool does:
 - Checks your GPU Name in use
 - Checks your GPU Driver version
-- Toggles ULPS/MPO/TDR/HAGS via the Registry
+- Toggles ULPS/MPO/TDR/HAGS/SHADER CACHE via the Registry
 - Gracefully Reboots your pc
 - Download redirects to your brand's support page for latest drivers
 
@@ -47,7 +47,9 @@ What this tool does:
 
 (Optional) TDR Fix Toggle will be available for those having TDR related errors when playing games. (also requires restart for changes to apply)
 
-(Optional) HAGS Fix Toggle will be availabler for those having HAGS related performance drops and issues. (also requires restart for changes to apply)
+(Optional) HAGS Fix Toggle will be available for those having HAGS related performance drops and issues. (also requires restart for changes to apply)
+
+(Optional) SHADER CACHE Dropdown will be available for those having FRAME TIME related performance drops and issues. (also requires restart for changes to apply)
 
 3. Hit the reboot button.
 
@@ -58,6 +60,9 @@ Note: To restore MPO, just open the tool and Toggle off the fix then reboot once
 
 
 ## Changelog
+
+v5.00(fifth release):
+- SHADER CACHE Dropdown added
 
 v4.0(fourth release):
 - (Bugfix) GPU Brand detection has been tweaked and now detects properly
