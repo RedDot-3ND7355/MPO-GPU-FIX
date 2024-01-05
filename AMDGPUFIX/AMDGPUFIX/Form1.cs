@@ -351,7 +351,7 @@ namespace AMDGPUFIX
         // SHADER CACHE Info Button
         //
         private void materialButton5_Click(object sender, EventArgs e) =>
-            Process.Start("https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/HAGS");
+            Process.Start("https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/SHADER-CACHE-(AMD)");
         //
         // End
         //
