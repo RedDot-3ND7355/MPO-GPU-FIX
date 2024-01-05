@@ -61,7 +61,10 @@ Note: To restore MPO, just open the tool and Toggle off the fix then reboot once
 
 ## Changelog
 
-v5.00(fifth release):
+v5.1(hotfix)
+- (Bugfix) Forgot to update SHADER CACHE info button to the new repos wiki page
+
+v5.0(fifth release):
 - SHADER CACHE Dropdown added
 
 v4.0(fourth release):
