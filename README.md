@@ -65,6 +65,9 @@ Feel free to donate! Any amount will help <3
 
 ## Changelog
 
+v5.2
+- DONATE Button added
+
 v5.1(hotfix)
 - (Bugfix) Forgot to update SHADER CACHE info button to the new repos wiki page
 
