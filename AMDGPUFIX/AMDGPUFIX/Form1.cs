@@ -355,5 +355,14 @@ namespace AMDGPUFIX
         //
         // End
         //
+
+        //
+        // DONATE Button
+        //
+        private void materialButton6_Click(object sender, EventArgs e) =>
+            Process.Start("https://www.paypal.com/donate/?hosted_button_id=ZURUG4V6F6LRN");
+        //
+        // End
+        //
     }
 }
