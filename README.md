@@ -58,6 +58,10 @@ That's it!
 
 Note: To restore MPO, just open the tool and Toggle off the fix then reboot once again.
 
+## Donations
+
+Feel free to donate! Any amount will help <3
+[The link is right here!](https://www.paypal.com/donate/?hosted_button_id=ZURUG4V6F6LRN)
 
 ## Changelog
 
