@@ -11,6 +11,7 @@ Here's a list of symptoms caused by MPO (a feature added by Microsoft a few year
 
 List of GPU affected by MPO as reported by users:
 - NVIDIA RTX 30 Series
+- NVIDIA RTX 20 Series
 - NVIDIA GTX 1600 Series
 - AMD RX 5000 Series
 - AMD RX 6000 Series
@@ -51,6 +52,8 @@ What this tool does:
 
 (Optional) SHADER CACHE Dropdown will be available for those having FRAME TIME related performance drops and issues. (also requires restart for changes to apply)
 
+(Optional) TDRLevel Dropdown will be available for those having TDR related errors when playing games. (also requires restart for changes to apply)
+
 3. Hit the reboot button.
 
 
@@ -65,10 +68,15 @@ Feel free to donate! Any amount will help <3
 
 ## Changelog
 
-v5.2
+v6.0(sixth release):
+- TDRLevel Dropdown added
+- Improved detection of APU/IGPU
+- WMI Repository error detection added
+
+v5.2(nothing note worthy):
 - DONATE Button added
 
-v5.1(hotfix)
+v5.1(hotfix):
 - (Bugfix) Forgot to update SHADER CACHE info button to the new repos wiki page
 
 v5.0(fifth release):
