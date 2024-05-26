@@ -3,9 +3,7 @@ using MaterialSkin.Controls;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Management;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace AMDGPUFIX
@@ -13,12 +11,13 @@ namespace AMDGPUFIX
     public partial class Form1 : MaterialForm
     {
         // Globals
-        string GPUName = "";
-        string GPUVersion = "";
+        string GPUName = "Unknown";
+        string GPUVersion = "???";
         string url = string.Empty;
         static RegistryKey defaultKey = null;
         static RegistryKey tdrKey = null;
         static RegistryKey hagsKey = null;
+        static RegistryKey tdrLevel = null;
         bool Ready = false;
         ULPS ULPS = new ULPS();
         SHADERCACHE shdrch = new SHADERCACHE();
@@ -41,7 +40,35 @@ namespace AMDGPUFIX
             DetectSHADERCACHE();
             DetectMPO();
             DetectHAGS();
+            DetectTDRLevel();
             Ready = true;
+        }
+
+        private void DetectTDRLevel()
+        {
+            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            tdrLevel = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", writable: true);
+            if (tdrLevel.GetValue("TdrLevel") != null)
+            {
+                string val = tdrLevel.GetValue("TdrLevel").ToString();
+                if (int.TryParse(val, out int result))
+                    switch (result)
+                    {
+                        case 0:
+                            materialComboBox2.SelectedIndex = 1;
+                            break;
+                        case 1:
+                            materialComboBox2.SelectedIndex = 2;
+                            break;
+                        case 2:
+                            materialComboBox2.SelectedIndex = 3;
+                            break;
+                        case 3:
+                            materialComboBox2.SelectedIndex = 4;
+                            break;
+                    }
+
+            }
         }
 
         //
@@ -168,35 +195,94 @@ namespace AMDGPUFIX
         ManagementObjectSearcher drvsearcher = new ManagementObjectSearcher("SELECT * FROM Win32_VideoController");
         private void LoadGPUDriverVer()
         {
+
+            ManagementObjectCollection items = drvsearcher.Get();
             // GPU Name & Driver
-            foreach (ManagementObject mo in drvsearcher.Get())
+            if (items != null)
             {
-                foreach (PropertyData property in mo.Properties)
+                foreach (ManagementObject mo in items)
                 {
-                    // Get GPUName 
-                    if (property.Name == "Name")
-                        GPUName = property.Value.ToString();
-                    // Get GPUVersion
-                    if (property.Name == "DriverVersion")
-                        GPUVersion = property.Value.ToString();
-                    // Validate GPU
-                    if (property.Name == "PNPDeviceID")
-                        if (!property.Value.ToString().Contains("PCI"))
+                    if (mo != null)
+                    {
+                        foreach (PropertyData property in mo.Properties)
                         {
-                            GPUVersion = "";
-                            GPUName = "";
+                            if (property != null)
+                            {
+                                // Get GPUName 
+                                if (property.Name == "Name")
+                                    GPUName = property.Value.ToString();
+                                // Get GPUVersion
+                                if (property.Name == "DriverVersion")
+                                    GPUVersion = property.Value.ToString();
+                                // Validate APU
+                                if (VerifyifAPU(GPUName))
+                                {
+                                    GPUVersion = "";
+                                    GPUName = "";
+                                }
+                                // Validate GPU
+                                if (property.Name == "PNPDeviceID")
+                                    if (!property.Value.ToString().Contains("PCI"))
+                                    {
+                                        GPUVersion = "";
+                                        GPUName = "";
+                                    }
+                                    else break;
+                            }
                         }
-                        else break;
+                        if (GPUVersion.Length > 0 && GPUName.Length > 0)
+                            break;
+                    }
                 }
-                if (GPUVersion.Length > 0 && GPUName.Length > 0)
-                    break;
+                // End
+                materialLabel1.Text += GPUName;
+                materialLabel2.Text += GPUVersion;
             }
-            // End
-            materialLabel1.Text += GPUName;
-            materialLabel2.Text += GPUVersion;
+            else // RESTORE WMI
+            {
+                if (WMIFix.Notice())
+                {
+                    MaterialMessageBox.Show("Don't forget to reboot to apply changes after fixing your WMI Repository!");
+                    Application.Exit();
+                }
+                else
+                {
+                    MaterialMessageBox.Show("This app requires WMI Repository to work. Cancelled, closing...");
+                    Application.Exit();
+                }
+            }
         }
         //
         // End
+        //
+
+        //
+        // Begin Verification of APU
+        //
+        string[] blacklistedgpunames = { "HD Graphics", "UHD Graphics", "RX Vega Graphics" };
+        string[] whitelist = { "56", "64" };
+        private bool VerifyifAPU(string gpuname) // true IF apu
+        {
+            foreach (string name in blacklistedgpunames)
+            {
+                if (!CheckWhiteList(gpuname) && gpuname.Contains(name))
+                    return true;
+            }
+            return false;
+        }
+
+        private bool CheckWhiteList(string wlitem) // false IF not GPU whitelist
+        {
+            bool triggered = false;
+            foreach (string name in whitelist)
+                if (wlitem.Contains(name))
+                    triggered = true;
+            if (triggered)
+                return true;
+            return false;
+        }
+        //
+        // End Verification of APU
         //
 
         //
@@ -294,6 +380,39 @@ namespace AMDGPUFIX
         //
 
         //
+        // TDR Level Dropdown
+        //
+        private void materialComboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!Ready) return;
+            if (materialComboBox2.SelectedIndex > 0) // -1
+            {
+                switch (materialComboBox2.SelectedIndex)
+                {
+                    case 1:
+                        tdrLevel.SetValue("TdrLevel", 0, RegistryValueKind.DWord); // 0
+                        materialFloatingActionButton2.Visible = true;
+                        break;
+                    case 2:
+                        tdrLevel.SetValue("TdrLevel", 1, RegistryValueKind.DWord); // 1
+                        materialFloatingActionButton2.Visible = true;
+                        break;
+                    case 3:
+                        tdrLevel.SetValue("TdrLevel", 2, RegistryValueKind.DWord); // 2
+                        materialFloatingActionButton2.Visible = true;
+                        break;
+                    case 4:
+                        tdrLevel.SetValue("TdrLevel", 3, RegistryValueKind.DWord); // 3
+                        materialFloatingActionButton2.Visible = true;
+                        break;
+                }
+            }
+        }
+        //
+        // End
+        //
+
+        //
         // Reboot PC Button
         //
         private void materialFloatingActionButton2_Click(object sender, EventArgs e) =>
@@ -361,6 +480,15 @@ namespace AMDGPUFIX
         //
         private void materialButton6_Click(object sender, EventArgs e) =>
             Process.Start("https://www.paypal.com/donate/?hosted_button_id=ZURUG4V6F6LRN");
+        //
+        // End
+        //
+
+        //
+        // TDR Level Info Button
+        //
+        private void materialButton7_Click(object sender, EventArgs e) =>
+            Process.Start("https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/SHADER-CACHE-(AMD)"); // todo
         //
         // End
         //
