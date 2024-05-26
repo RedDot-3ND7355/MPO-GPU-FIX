@@ -68,6 +68,9 @@ Feel free to donate! Any amount will help <3
 
 ## Changelog
 
+v6.1(hotfix):
+- (Bugfix) Forgot to update TDRLevel info button to the new repos wiki page
+
 v6.0(sixth release):
 - TDRLevel Dropdown added
 - Improved detection of APU/IGPU
