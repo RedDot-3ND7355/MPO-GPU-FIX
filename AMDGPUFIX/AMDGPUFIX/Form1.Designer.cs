@@ -49,6 +49,7 @@
             this.materialButton6 = new MaterialSkin.Controls.MaterialButton();
             this.materialComboBox2 = new MaterialSkin.Controls.MaterialComboBox();
             this.materialButton7 = new MaterialSkin.Controls.MaterialButton();
+            this.materialLabel5 = new MaterialSkin.Controls.MaterialLabel();
             this.materialCard1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -97,7 +98,7 @@
             // 
             this.materialSwitch1.AutoSize = true;
             this.materialSwitch1.Depth = 0;
-            this.materialSwitch1.Location = new System.Drawing.Point(17, 232);
+            this.materialSwitch1.Location = new System.Drawing.Point(17, 229);
             this.materialSwitch1.Margin = new System.Windows.Forms.Padding(0);
             this.materialSwitch1.MouseLocation = new System.Drawing.Point(-1, -1);
             this.materialSwitch1.MouseState = MaterialSkin.MouseState.HOVER;
@@ -216,7 +217,7 @@
             // 
             this.materialSwitch3.AutoSize = true;
             this.materialSwitch3.Depth = 0;
-            this.materialSwitch3.Location = new System.Drawing.Point(17, 266);
+            this.materialSwitch3.Location = new System.Drawing.Point(17, 263);
             this.materialSwitch3.Margin = new System.Windows.Forms.Padding(0);
             this.materialSwitch3.MouseLocation = new System.Drawing.Point(-1, -1);
             this.materialSwitch3.MouseState = MaterialSkin.MouseState.HOVER;
@@ -254,7 +255,7 @@
             // 
             this.materialSwitch4.AutoSize = true;
             this.materialSwitch4.Depth = 0;
-            this.materialSwitch4.Location = new System.Drawing.Point(17, 301);
+            this.materialSwitch4.Location = new System.Drawing.Point(17, 298);
             this.materialSwitch4.Margin = new System.Windows.Forms.Padding(0);
             this.materialSwitch4.MouseLocation = new System.Drawing.Point(-1, -1);
             this.materialSwitch4.MouseState = MaterialSkin.MouseState.HOVER;
@@ -397,7 +398,7 @@
             this.materialComboBox2.MaxDropDownItems = 4;
             this.materialComboBox2.MouseState = MaterialSkin.MouseState.OUT;
             this.materialComboBox2.Name = "materialComboBox2";
-            this.materialComboBox2.Size = new System.Drawing.Size(217, 35);
+            this.materialComboBox2.Size = new System.Drawing.Size(223, 35);
             this.materialComboBox2.StartIndex = 0;
             this.materialComboBox2.TabIndex = 16;
             this.materialComboBox2.UseTallSize = false;
@@ -424,10 +425,24 @@
             this.materialButton7.UseVisualStyleBackColor = true;
             this.materialButton7.Click += new System.EventHandler(this.materialButton7_Click);
             // 
+            // materialLabel5
+            // 
+            this.materialLabel5.AutoSize = true;
+            this.materialLabel5.Depth = 0;
+            this.materialLabel5.Font = new System.Drawing.Font("Roboto", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel);
+            this.materialLabel5.FontType = MaterialSkin.MaterialSkinManager.fontType.Caption;
+            this.materialLabel5.Location = new System.Drawing.Point(17, 329);
+            this.materialLabel5.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialLabel5.Name = "materialLabel5";
+            this.materialLabel5.Size = new System.Drawing.Size(46, 14);
+            this.materialLabel5.TabIndex = 18;
+            this.materialLabel5.Text = "TdrLevel";
+            // 
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(366, 393);
+            this.Controls.Add(this.materialLabel5);
             this.Controls.Add(this.materialButton7);
             this.Controls.Add(this.materialComboBox2);
             this.Controls.Add(this.materialButton6);
@@ -483,6 +498,7 @@
         private MaterialSkin.Controls.MaterialButton materialButton6;
         private MaterialSkin.Controls.MaterialComboBox materialComboBox2;
         private MaterialSkin.Controls.MaterialButton materialButton7;
+        private MaterialSkin.Controls.MaterialLabel materialLabel5;
     }
 }
 

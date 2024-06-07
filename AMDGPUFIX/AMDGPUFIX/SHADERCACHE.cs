@@ -22,21 +22,37 @@ namespace AMDGPUFIX
         // Check last profile's value to return
         public int CheckShaderCache()
         {
-            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-            // Count Profiles
-            int count = 0;
-            bool counted = false;
-            while (!counted)
+            // Registry Check
+            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64); // Use 64 first
+            if (localMachine == null)
+                localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // Use 32 if 64 failed
+            if (localMachine == null)
             {
-                Thread.Sleep(50);
-                shadercacheKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + count.ToString("D" + 4) + "\\UMD", writable: true);
-                if (shadercacheKey != null)
+                MaterialMessageBox.Show("Error! Could not set registry base path due to lack of permission.");
+                return -1;
+            }
+            // Count Profiles
+            try
+            {
+                int count = 0;
+                bool counted = false;
+                while (!counted)
                 {
-                    gpu_profiles.Add("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + count.ToString("D" + 4) + "\\UMD");
-                    count++;
+                    Thread.Sleep(50);
+                    shadercacheKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + count.ToString("D" + 4) + "\\UMD", writable: true);
+                    if (shadercacheKey != null)
+                    {
+                        gpu_profiles.Add("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + count.ToString("D" + 4) + "\\UMD");
+                        count++;
+                    }
+                    else
+                        counted = true;
                 }
-                else
-                    counted = true;
+            } 
+            catch
+            {
+                MaterialMessageBox.Show(" Permission Denied!\r\n You are probably affected by a rootkit (virus)\r\n or User account that lacks permissions due to being managed by organisation.\r\n or Anti-Ransomware protection preventing registry access.\r\n Shader Cache Dropdown will be disabled to prevent any issues.");
+                return -1;
             }
             Thread.Sleep(100);
             // Check Values

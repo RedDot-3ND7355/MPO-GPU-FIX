@@ -127,7 +127,11 @@ namespace AMDGPUFIX
         private void DetectSHADERCACHE()
         {
             if (!materialLabel3.Visible)
+            {
                 materialComboBox1.SelectedIndex = shdrch.CheckShaderCache();
+                if (materialComboBox1.SelectedIndex < 0)
+                    materialComboBox1.Enabled = false;
+            }
         }
         //
         // End
@@ -158,7 +162,7 @@ namespace AMDGPUFIX
         private void BrandCompare()
         {
             // AMD Brand
-            if (GPUName.Contains("AMD") || GPUName.Contains("Radeon"))
+            if (GPUName.Contains("AMD") || GPUName.Contains("Radeon") || GPUName.Contains("Vega") || GPUName.Contains("Advanced Micro Devices"))
             {
                 url = "https://www.amd.com/en/support";
                 materialLabel3.Visible = false;
@@ -189,21 +193,31 @@ namespace AMDGPUFIX
         // End
         //
 
+        // Debug function - requires Newtonsoft.Json Import
+        //private string Serialize(Object o)
+        //{
+        //    string json = JsonConvert.SerializeObject(o, Formatting.Indented);
+        //    return json;
+        //}
+
         //
         // Load GPU Driver Version
         //
         ManagementObjectSearcher drvsearcher = new ManagementObjectSearcher("SELECT * FROM Win32_VideoController");
         private void LoadGPUDriverVer()
         {
-
             ManagementObjectCollection items = drvsearcher.Get();
             // GPU Name & Driver
             if (items != null)
             {
+                // debug int
+                // int ioii = 0;
                 foreach (ManagementObject mo in items)
                 {
                     if (mo != null)
                     {
+                        // Debug dumper
+                        // File.WriteAllText(ioii + ".dump", Serialize(mo.Properties));
                         foreach (PropertyData property in mo.Properties)
                         {
                             if (property != null)
@@ -214,20 +228,13 @@ namespace AMDGPUFIX
                                 // Get GPUVersion
                                 if (property.Name == "DriverVersion")
                                     GPUVersion = property.Value.ToString();
-                                // Validate APU
-                                if (VerifyifAPU(GPUName))
+                                // Validate APU, Status and GPU
+                                if (VerifyifAPU(GPUName) || (property.Name == "ConfigManagerErrorCode" && property.Value.ToString() == "22") || (property.Name == "Availability" && property.Value.ToString() == "8") || (property.Name == "PNPDeviceID" && !property.Value.ToString().Contains("PCI")))
                                 {
                                     GPUVersion = "";
                                     GPUName = "";
+                                    break;
                                 }
-                                // Validate GPU
-                                if (property.Name == "PNPDeviceID")
-                                    if (!property.Value.ToString().Contains("PCI"))
-                                    {
-                                        GPUVersion = "";
-                                        GPUName = "";
-                                    }
-                                    else break;
                             }
                         }
                         if (GPUVersion.Length > 0 && GPUName.Length > 0)
