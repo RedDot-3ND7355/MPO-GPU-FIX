@@ -68,6 +68,11 @@ Feel free to donate! Any amount will help <3
 
 ## Changelog
 
+v6.2(hotfix):
+- TDRLevel Caption added
+- Improved detection of Offline/Deactivated PCI Cards
+- Permission Check for Driver-level registry path and key added
+
 v6.1(hotfix):
 - (Bugfix) Forgot to update TDRLevel info button to the new repos wiki page
 
