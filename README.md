@@ -68,6 +68,9 @@ Feel free to donate! Any amount will help <3
 
 ## Changelog
 
+v6.3(hotfix)
+- Reworked GPU Profile counter (PS: Sorry for breaking ShaderCache dropdown)
+
 v6.2(hotfix):
 - TDRLevel Caption added
 - Improved detection of Offline/Deactivated PCI Cards
