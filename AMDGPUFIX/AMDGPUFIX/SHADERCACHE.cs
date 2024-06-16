@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,19 +35,18 @@ namespace AMDGPUFIX
             // Count Profiles
             try
             {
-                int count = 0;
-                bool counted = false;
-                while (!counted)
+                shadercacheKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}" , writable: true);
+                var profiles = shadercacheKey.GetSubKeyNames();
+                foreach (string profile in profiles)
                 {
-                    Thread.Sleep(50);
-                    shadercacheKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + count.ToString("D" + 4) + "\\UMD", writable: true);
-                    if (shadercacheKey != null)
+                    if (profile.Length == 4 && profile.All(Char.IsDigit))
                     {
-                        gpu_profiles.Add("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + count.ToString("D" + 4) + "\\UMD");
-                        count++;
+                        shadercacheKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + profile + "\\UMD", writable: true);
+                        if (shadercacheKey != null)
+                        {
+                            gpu_profiles.Add("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + profile + "\\UMD");
+                        }
                     }
-                    else
-                        counted = true;
                 }
             } 
             catch
@@ -54,7 +54,6 @@ namespace AMDGPUFIX
                 MaterialMessageBox.Show(" Permission Denied!\r\n You are probably affected by a rootkit (virus)\r\n or User account that lacks permissions due to being managed by organisation.\r\n or Anti-Ransomware protection preventing registry access.\r\n Shader Cache Dropdown will be disabled to prevent any issues.");
                 return -1;
             }
-            Thread.Sleep(100);
             // Check Values
             int intval = -1;
             foreach (string profile in gpu_profiles)
