@@ -129,6 +129,8 @@ namespace AMDGPUFIX
             if (!materialLabel3.Visible)
             {
                 materialComboBox1.SelectedIndex = shdrch.CheckShaderCache();
+                if (shdrch.GpuProfilesCount() > 0)
+                    return;
                 if (materialComboBox1.SelectedIndex < 0)
                     materialComboBox1.Enabled = false;
             }

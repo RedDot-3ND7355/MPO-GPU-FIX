@@ -20,6 +20,12 @@ namespace AMDGPUFIX
         // 0 = ON            | 32-00
         // 2 = OFF           | 30-00
 
+        // Check profile count externally
+        public int GpuProfilesCount()
+        {
+            return gpu_profiles.Count;
+        }
+
         // Check last profile's value to return
         public int CheckShaderCache()
         {
