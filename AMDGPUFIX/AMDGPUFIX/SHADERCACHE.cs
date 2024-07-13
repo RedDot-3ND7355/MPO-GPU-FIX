@@ -117,7 +117,7 @@ namespace AMDGPUFIX
             foreach (string profile in gpu_profiles)
             {
                 shadercacheKey = localMachine.OpenSubKey(profile, writable: true);
-                if (shadercacheKey != null && shadercacheKey.GetValue("ShaderCache") != null)
+                if (shadercacheKey != null /*&& shadercacheKey.GetValue("ShaderCache") != null*/)
                     shadercacheKey.SetValue("ShaderCache", byteval, RegistryValueKind.Binary);
             }
         }
