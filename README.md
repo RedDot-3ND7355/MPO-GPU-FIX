@@ -67,6 +67,9 @@ Feel free to donate! Any amount will help <3
 [The link is right here!](https://www.paypal.com/donate/?hosted_button_id=ZURUG4V6F6LRN)
 
 ## Changelog
+v6.5(hotfix)
+- (Bugfix) A uneeded check was being done for non-existant ShaderCache value in registry preventing user to use the toggle
+
 v6.4(hotfix)
 - (Bugfix) Added an additional check for profile count even if ShaderCache entry does not exist in registry
 
