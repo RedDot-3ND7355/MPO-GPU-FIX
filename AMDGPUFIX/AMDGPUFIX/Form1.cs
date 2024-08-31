@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Management;
 using System.Windows.Forms;
+using System.Security.Principal;
 
 namespace AMDGPUFIX
 {
@@ -32,6 +33,8 @@ namespace AMDGPUFIX
             materialSkinManager.EnforceBackcolorOnAllComponents = true;
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
+            // Admin Check for ClickOnce Security Trust
+            CheckAdminRights();
             // continue...
             LoadGPUDriverVer();
             BrandCompare();
@@ -42,6 +45,21 @@ namespace AMDGPUFIX
             DetectHAGS();
             DetectTDRLevel();
             Ready = true;
+        }
+
+        private void CheckAdminRights()
+        {
+            bool isElevated;
+            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
+            {
+                WindowsPrincipal principal = new WindowsPrincipal(identity);
+                isElevated = principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+            if (!isElevated) 
+            {
+                MessageBox.Show("Please run as admin!");
+                Application.Exit();
+            }
         }
 
         private void DetectTDRLevel()
