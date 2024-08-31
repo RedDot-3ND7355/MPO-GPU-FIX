@@ -67,6 +67,11 @@ Feel free to donate! Any amount will help <3
 [The link is right here!](https://www.paypal.com/donate/?hosted_button_id=ZURUG4V6F6LRN)
 
 ## Changelog
+v6.6(hotfix)
+- Added Permission Check when starting the app
+- Removed the required elevation to start app
+- Added ClickOnce Security for trust as counter measure to being detected as false positive
+
 v6.5(hotfix)
 - (Bugfix) A uneeded check was being done for non-existant ShaderCache value in registry preventing user to use the toggle
 
