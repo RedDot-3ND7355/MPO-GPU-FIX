@@ -10,6 +10,7 @@ Here's a list of symptoms caused by MPO (a feature added by Microsoft a few year
 - Screen flickering nonstop
 
 List of GPU affected by MPO as reported by users:
+- NVIDIA RTX 40 Series
 - NVIDIA RTX 30 Series
 - NVIDIA RTX 20 Series
 - NVIDIA GTX 1600 Series
