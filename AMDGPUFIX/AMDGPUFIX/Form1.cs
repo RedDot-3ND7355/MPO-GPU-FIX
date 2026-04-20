@@ -3,26 +3,33 @@ using MaterialSkin.Controls;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Management;
-using System.Windows.Forms;
 using System.Security.Principal;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace AMDGPUFIX
 {
     public partial class Form1 : MaterialForm
     {
         // Globals
+        public string PNPDeviceID = "";
         string GPUName = "Unknown";
         string GPUVersion = "???";
         string url = string.Empty;
         static RegistryKey defaultKey = null;
+        static RegistryKey minfpsKey = null;
         static RegistryKey tdrKey = null;
+        static RegistryKey overlayKey = null;
         static RegistryKey hagsKey = null;
         static RegistryKey tdrLevel = null;
         bool Ready = false;
         ULPS ULPS = new ULPS();
         SHADERCACHE shdrch = new SHADERCACHE();
         public readonly MaterialSkinManager materialSkinManager;
+        dxmod Dxmod;
+        bsodfix _bsodfix;
         // End
 
         public Form1()
@@ -42,8 +49,12 @@ namespace AMDGPUFIX
             DetectULPS();
             DetectSHADERCACHE();
             DetectMPO();
+            DetectOverlayMinFPS();
             DetectHAGS();
             DetectTDRLevel();
+            DetectDisableOverlays();
+            // Ini dxmod
+            Dxmod = new dxmod();
             Ready = true;
         }
 
@@ -55,7 +66,7 @@ namespace AMDGPUFIX
                 WindowsPrincipal principal = new WindowsPrincipal(identity);
                 isElevated = principal.IsInRole(WindowsBuiltInRole.Administrator);
             }
-            if (!isElevated) 
+            if (!isElevated)
             {
                 MessageBox.Show("Please run as admin!");
                 Application.Exit();
@@ -128,6 +139,25 @@ namespace AMDGPUFIX
         //
 
         //
+        // Detect Timeout detection and recovery
+        //
+        private void DetectDisableOverlays()
+        {
+            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            overlayKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", writable: true);
+            if (overlayKey.GetValue("DisableOverlays") != null)
+            {
+                string val = overlayKey.GetValue("DisableOverlays").ToString();
+                if (int.TryParse(val, out int result))
+                    if (result == 1)
+                        materialSwitch6.Checked = true;
+            }
+        }
+        //
+        // End
+        //
+
+        //
         // Detect Ultra-Low Power State (AMD)
         // 
         private void DetectULPS()
@@ -177,6 +207,27 @@ namespace AMDGPUFIX
         //
 
         //
+        // Detect OverlayMinFPS | MPO Related
+        //
+        private void DetectOverlayMinFPS()
+        {
+            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            minfpsKey = localMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\DWM\\", writable: true);
+            if (minfpsKey.GetValue("OverlayMinFPS") != null)
+            {
+                string val = minfpsKey.GetValue("OverlayMinFPS").ToString();
+                if (int.TryParse(val, out int result))
+                    if (result == 0)
+                        materialSwitch5.Checked = true;
+                if (materialSwitch5.Checked && materialSwitch1.Checked)
+                    MaterialMessageBox.Show("OverlayMinFPS Will have no effect with MPO Fix on.");
+            }
+        }
+        //
+        // End
+        //
+
+        //
         // GPU Brand Compare
         //
         private void BrandCompare()
@@ -186,6 +237,7 @@ namespace AMDGPUFIX
             {
                 url = "https://www.amd.com/en/support";
                 materialLabel3.Visible = false;
+                materialButton8.Enabled = true;
             }
             // NVIDIA Brand
             else if (GPUName.Contains("NVIDIA") || GPUName.Contains("RTX") || GPUName.Contains("GTX"))
@@ -193,6 +245,7 @@ namespace AMDGPUFIX
                 url = "https://www.nvidia.com/download/index.aspx";
                 materialLabel3.Text = "NVIDIA GPU";
                 materialLabel3.Visible = true;
+                materialButton8.Enabled = false;
             }
             // INTEL Brand
             else if (GPUName.Contains("INTEL") || GPUName.Contains("ARC"))
@@ -200,6 +253,7 @@ namespace AMDGPUFIX
                 url = "https://www.intel.ca/content/www/ca/en/download/726609/intel-arc-iris-xe-graphics-whql-windows.html?";
                 materialLabel3.Text = "INTEL GPU";
                 materialLabel3.Visible = true;
+                materialButton8.Enabled = false;
             }
             // Unknown Brand
             else
@@ -207,6 +261,7 @@ namespace AMDGPUFIX
                 materialFloatingActionButton1.Enabled = false;
                 materialLabel3.Text = "UNKWN GPU";
                 materialLabel3.Visible = true;
+                materialButton8.Enabled = false;
             }
         }
         //
@@ -223,9 +278,11 @@ namespace AMDGPUFIX
         //
         // Load GPU Driver Version
         //
-        ManagementObjectSearcher drvsearcher = new ManagementObjectSearcher("SELECT * FROM Win32_VideoController");
+
+        ManagementObjectSearcher drvsearcher; // = new ManagementObjectSearcher("SELECT * FROM Win32_VideoController");
         private void LoadGPUDriverVer()
         {
+            drvsearcher = new ManagementObjectSearcher("SELECT * FROM Win32_VideoController");
             ManagementObjectCollection items = drvsearcher.Get();
             // GPU Name & Driver
             if (items != null)
@@ -248,6 +305,9 @@ namespace AMDGPUFIX
                                 // Get GPUVersion
                                 if (property.Name == "DriverVersion")
                                     GPUVersion = property.Value.ToString();
+                                // PNPDeviceID (for restarting gpu adapter)
+                                if (property.Name == "PNPDeviceID")
+                                    DXHandler.PNPDeviceID = @property.Value.ToString();
                                 // Validate APU, Status and GPU
                                 if (VerifyifAPU(GPUName) || (property.Name == "ConfigManagerErrorCode" && property.Value.ToString() == "22") || (property.Name == "Availability" && property.Value.ToString() == "8") || (property.Name == "PNPDeviceID" && !property.Value.ToString().Contains("PCI")))
                                 {
@@ -286,7 +346,7 @@ namespace AMDGPUFIX
         //
         // Begin Verification of APU
         //
-        string[] blacklistedgpunames = { "HD Graphics", "UHD Graphics", "RX Vega Graphics" };
+        string[] blacklistedgpunames = { "HD Graphics", "UHD Graphics", "RX Vega Graphics", "AMD Radeon(TM) Graphics", "Radeon Graphics", "Radeon(TM) Graphics" };
         string[] whitelist = { "56", "64" };
         private bool VerifyifAPU(string gpuname) // true IF apu
         {
@@ -332,6 +392,7 @@ namespace AMDGPUFIX
             else
                 tdrKey.DeleteValue("TdrDelay");
             materialFloatingActionButton2.Visible = true;
+            materialFloatingActionButton2.BringToFront();
         }
         //
         // End
@@ -343,8 +404,14 @@ namespace AMDGPUFIX
         private void materialSwitch2_CheckedChanged(object sender, EventArgs e)
         {
             if (!Ready) return;
+            if (GPUName.Contains("9060") || GPUName.Contains("9070") && materialSwitch2.Checked)
+            {
+                MaterialMessageBox.Show("Disabling ULPS may cause system instabilities on AMD 9000 Series GPU. Monitor your system after enabling and disable if you encounter any instability.");
+                return;
+            }
             ULPS.ULPSHandler(materialSwitch2.Checked);
             materialFloatingActionButton2.Visible = true;
+            materialFloatingActionButton2.BringToFront();
         }
         //
         // End
@@ -369,6 +436,7 @@ namespace AMDGPUFIX
                     break;
             }
             materialFloatingActionButton2.Visible = true;
+            materialFloatingActionButton2.BringToFront();
         }
         //
         // End
@@ -380,11 +448,52 @@ namespace AMDGPUFIX
         private void materialSwitch1_CheckedChanged(object sender, EventArgs e)
         {
             if (!Ready) return;
+            if (materialSwitch5.Checked && materialSwitch1.Checked)
+                MaterialMessageBox.Show("MPO Fix disables OverlayMinFPS and will have no effect.");
             if (materialSwitch1.Checked)
                 defaultKey.SetValue("OverlayTestMode", 0x00000005, RegistryValueKind.DWord);
             else
                 defaultKey.DeleteValue("OverlayTestMode");
             materialFloatingActionButton2.Visible = true;
+            materialFloatingActionButton2.BringToFront();
+        }
+        //
+        // End
+        //
+
+        //
+        // OverlayMinFPS Switch
+        //
+        private void materialSwitch5_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!Ready) return;
+            if (materialSwitch1.Checked && materialSwitch5.Checked)
+                MaterialMessageBox.Show("OverlayMinFPS requires MPO Fix to be disabled or it will have no effect.");
+            if (materialSwitch5.Checked)
+                minfpsKey.SetValue("OverlayMinFPS", 0x00000000, RegistryValueKind.DWord);
+            else
+                minfpsKey.DeleteValue("OverlayMinFPS");
+            materialFloatingActionButton2.Visible = true;
+            materialFloatingActionButton2.BringToFront();
+        }
+        //
+        // End
+        //
+
+        //
+        // DisableOverlays Switch 
+        // 
+        private void materialSwitch6_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!Ready) return;
+            if (materialSwitch1.Checked || materialSwitch5.Checked)
+                MaterialMessageBox.Show("Disabling Overlays will render MPO Fix and OverlayMinFPS Fix useless and will have no effect.");
+            if (materialSwitch6.Checked)
+                overlayKey.SetValue("DisableOverlays", 0x00000001, RegistryValueKind.DWord);
+            else
+                overlayKey.DeleteValue("DisableOverlays");
+            materialFloatingActionButton2.Visible = true;
+            materialFloatingActionButton2.BringToFront();
         }
         //
         // End
@@ -401,6 +510,7 @@ namespace AMDGPUFIX
             else
                 hagsKey.SetValue("HwSchMode", 0x00000002, RegistryValueKind.DWord);
             materialFloatingActionButton2.Visible = true;
+            materialFloatingActionButton2.BringToFront();
         }
         //
         // End
@@ -419,18 +529,22 @@ namespace AMDGPUFIX
                     case 1:
                         tdrLevel.SetValue("TdrLevel", 0, RegistryValueKind.DWord); // 0
                         materialFloatingActionButton2.Visible = true;
+                        materialFloatingActionButton2.BringToFront();
                         break;
                     case 2:
                         tdrLevel.SetValue("TdrLevel", 1, RegistryValueKind.DWord); // 1
                         materialFloatingActionButton2.Visible = true;
+                        materialFloatingActionButton2.BringToFront();
                         break;
                     case 3:
                         tdrLevel.SetValue("TdrLevel", 2, RegistryValueKind.DWord); // 2
                         materialFloatingActionButton2.Visible = true;
+                        materialFloatingActionButton2.BringToFront();
                         break;
                     case 4:
                         tdrLevel.SetValue("TdrLevel", 3, RegistryValueKind.DWord); // 3
                         materialFloatingActionButton2.Visible = true;
+                        materialFloatingActionButton2.BringToFront();
                         break;
                 }
             }
@@ -516,6 +630,64 @@ namespace AMDGPUFIX
         //
         private void materialButton7_Click(object sender, EventArgs e) =>
             Process.Start("https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/TDRLevel");
+        //
+        // End
+        //
+
+        //
+        // DisableOverlays Info Button
+        //
+        private void materialButton11_Click(object sender, EventArgs e)
+        {
+            Process.Start("https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/Disable-Overlays");
+        }
+        //
+        // End
+        //
+
+        //
+        // OverlayMinFPS Info Button
+        //
+        private void materialButton10_Click(object sender, EventArgs e)
+        {
+            Process.Start("https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/OverlayMinFPS");
+        }
+        //
+        // End
+        //
+
+        //
+        // DX Switcher Button (AMD Only)
+        //
+        private void materialButton8_Click(object sender, EventArgs e)
+        {
+            if (Dxmod != null)
+            {
+                Dxmod.Close();
+                Dxmod = new dxmod();
+            }
+            Dxmod.Show();
+            Dxmod.TopMost = true;
+            Dxmod.TopMost = false;
+        }
+        //
+        // End
+        //
+
+        //
+        // BSOD FIX Button
+        //
+        private void materialButton9_Click(object sender, EventArgs e)
+        {
+            if (_bsodfix != null)
+            {
+                _bsodfix.Close();
+            }
+            _bsodfix = new bsodfix();
+            _bsodfix.Show();
+            _bsodfix.TopMost = true;
+            _bsodfix.TopMost = false;
+        }
         //
         // End
         //

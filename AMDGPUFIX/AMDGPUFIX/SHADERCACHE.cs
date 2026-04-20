@@ -57,41 +57,45 @@ namespace AMDGPUFIX
             } 
             catch
             {
-                MaterialMessageBox.Show(" Permission Denied!\r\n You are probably affected by a rootkit (virus)\r\n or User account that lacks permissions due to being managed by organisation.\r\n or Anti-Ransomware protection preventing registry access.\r\n Shader Cache Dropdown will be disabled to prevent any issues.");
+                MaterialMessageBox.Show(" Permission Denied!\r\n You are probably affected by a rootkit (virus)\r\n or User account that lacks permissions due to being managed by organisation.\r\n or Anti-Ransomware protection preventing registry access(such as Acronis True Image).\r\n Shader Cache Dropdown will be disabled to prevent any issues.");
                 return -1;
             }
             // Check Values
-            int intval = -1;
             foreach (string profile in gpu_profiles)
             {
                 shadercacheKey = localMachine.OpenSubKey(profile, writable: true);
                 if (shadercacheKey != null && shadercacheKey.GetValue("ShaderCache") != null)
                 {
-                    string result = "";
+                    byte[] result = new byte[0];
                     var valueKind = shadercacheKey.GetValueKind("ShaderCache");
                     if (valueKind == RegistryValueKind.Binary)
                     {
                         var value = (byte[])shadercacheKey.GetValue("ShaderCache");
-                        result = BitConverter.ToString(value);
+                        result = value;
                     }
-                    switch (result)
+                    /* New detection */
+                    if (result != null && result.Length >= 2)
                     {
-                        case "32-00":
-                            intval = 0; // ON
-                            break;
-                        case "31-00":
-                            intval = 1; // AMD Optimized
-                            break;
-                        case "30-00":
-                            intval = 2; // OFF
-                            break;
-                        default:
-                            intval = -1; // UNKN, bad profile?
-                            break;
+                        // Primary Check
+                        if (result[1] == 0x00)
+                        {
+                            if (result[0] == 0x32)      // ON (32 00)
+                                return 0;  // Enabled
+                            else if (result[0] == 0x31) // Optimized (31 00)
+                                return 1; // Default
+                            else if (result[0] == 0x30) // OFF (30 00)
+                                return 2; // Disabled
+                        }
+                        MaterialMessageBox.Show("Unknown ShaderCache value type detected in registry: " + BitConverter.ToString(result) + "\r\n could be future update changing the value. Please report this to RedDot3ND on github.");
                     }
                 }
+                else
+                {
+                    MaterialMessageBox.Show("No ShaderCache profile has been set, using AMD Optimized as default value.\r\nDriver update removed this value.");
+                    return -1;
+                }
             }
-            return intval;
+            return -1;
         }
 
         // Set value to all profiles
