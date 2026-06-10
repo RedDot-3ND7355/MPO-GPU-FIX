@@ -3,10 +3,8 @@ using MaterialSkin.Controls;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Management;
 using System.Security.Principal;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace AMDGPUFIX
@@ -24,9 +22,10 @@ namespace AMDGPUFIX
         static RegistryKey overlayKey = null;
         static RegistryKey hagsKey = null;
         static RegistryKey tdrLevel = null;
+        bool isAMDGpu = false;
         bool Ready = false;
         ULPS ULPS = new ULPS();
-        SHADERCACHE shdrch = new SHADERCACHE();
+        SHADERCACHE shdrch;
         public readonly MaterialSkinManager materialSkinManager;
         dxmod Dxmod;
         bsodfix _bsodfix;
@@ -45,16 +44,16 @@ namespace AMDGPUFIX
             // continue...
             LoadGPUDriverVer();
             BrandCompare();
-            DetectTDR();
+            // AMD Only
             DetectULPS();
             DetectSHADERCACHE();
+            // DWM Related & More
+            DetectTDR();
             DetectMPO();
             DetectOverlayMinFPS();
             DetectHAGS();
             DetectTDRLevel();
             DetectDisableOverlays();
-            // Ini dxmod
-            Dxmod = new dxmod();
             Ready = true;
         }
 
@@ -69,7 +68,7 @@ namespace AMDGPUFIX
             if (!isElevated)
             {
                 MessageBox.Show("Please run as admin!");
-                Application.Exit();
+                Process.GetCurrentProcess().Kill();
             }
         }
 
@@ -162,7 +161,7 @@ namespace AMDGPUFIX
         // 
         private void DetectULPS()
         {
-            if (!materialLabel3.Visible)
+            if (!materialLabel3.Visible && isAMDGpu)
                 materialSwitch2.Checked = ULPS.CheckULPS();
         }
         //
@@ -174,7 +173,7 @@ namespace AMDGPUFIX
         // 
         private void DetectSHADERCACHE()
         {
-            if (!materialLabel3.Visible)
+            if (!materialLabel3.Visible && isAMDGpu)
             {
                 materialComboBox1.SelectedIndex = shdrch.CheckShaderCache();
                 if (shdrch.GpuProfilesCount() > 0)
@@ -238,6 +237,8 @@ namespace AMDGPUFIX
                 url = "https://www.amd.com/en/support";
                 materialLabel3.Visible = false;
                 materialButton8.Enabled = true;
+                shdrch = new SHADERCACHE();
+                isAMDGpu = true;
             }
             // NVIDIA Brand
             else if (GPUName.Contains("NVIDIA") || GPUName.Contains("RTX") || GPUName.Contains("GTX"))
@@ -246,6 +247,7 @@ namespace AMDGPUFIX
                 materialLabel3.Text = "NVIDIA GPU";
                 materialLabel3.Visible = true;
                 materialButton8.Enabled = false;
+                isAMDGpu = false;
             }
             // INTEL Brand
             else if (GPUName.Contains("INTEL") || GPUName.Contains("ARC"))
@@ -254,6 +256,7 @@ namespace AMDGPUFIX
                 materialLabel3.Text = "INTEL GPU";
                 materialLabel3.Visible = true;
                 materialButton8.Enabled = false;
+                isAMDGpu = false;
             }
             // Unknown Brand
             else
@@ -262,6 +265,14 @@ namespace AMDGPUFIX
                 materialLabel3.Text = "UNKWN GPU";
                 materialLabel3.Visible = true;
                 materialButton8.Enabled = false;
+                isAMDGpu = false;
+            }
+
+            // Safety measures
+            if (!isAMDGpu)
+            {
+                materialSwitch2.Enabled = false;
+                materialComboBox1.Enabled = false;
             }
         }
         //
@@ -403,8 +414,8 @@ namespace AMDGPUFIX
         //
         private void materialSwitch2_CheckedChanged(object sender, EventArgs e)
         {
-            if (!Ready) return;
-            if (GPUName.Contains("9060") || GPUName.Contains("9070") && materialSwitch2.Checked)
+            if (!Ready || !isAMDGpu) return;
+            if (GPUName.Contains("9060") || GPUName.Contains("9070") && !materialSwitch2.Checked)
             {
                 MaterialMessageBox.Show("Disabling ULPS may cause system instabilities on AMD 9000 Series GPU. Monitor your system after enabling and disable if you encounter any instability.");
                 return;
@@ -422,7 +433,7 @@ namespace AMDGPUFIX
         // 
         private void materialComboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (!Ready) return;
+            if (!Ready || !isAMDGpu) return;
             switch (materialComboBox1.SelectedItem.ToString())
             {
                 case "AMD Optimized":
@@ -662,9 +673,12 @@ namespace AMDGPUFIX
         private void materialButton8_Click(object sender, EventArgs e)
         {
             if (Dxmod != null)
-            {
                 Dxmod.Close();
-                Dxmod = new dxmod();
+            Dxmod = new dxmod();
+            if (Dxmod.disabled)
+            {
+                MaterialMessageBox.Show("DXMOD is disabled due to no compatible DX versions found.");
+                return;
             }
             Dxmod.Show();
             Dxmod.TopMost = true;
@@ -680,9 +694,7 @@ namespace AMDGPUFIX
         private void materialButton9_Click(object sender, EventArgs e)
         {
             if (_bsodfix != null)
-            {
                 _bsodfix.Close();
-            }
             _bsodfix = new bsodfix();
             _bsodfix.Show();
             _bsodfix.TopMost = true;

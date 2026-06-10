@@ -5,6 +5,8 @@ VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AMDGPUFIX", "AMDGPUFIX\AMDGPUFIX.csproj", "{8A2232C6-BC75-494D-8913-A014323EB27B}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{01D2E0E2-D536-40DC-A2F9-E20D3CFED1F3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,8 @@ Global
 		{8A2232C6-BC75-494D-8913-A014323EB27B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A2232C6-BC75-494D-8913-A014323EB27B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A2232C6-BC75-494D-8913-A014323EB27B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01D2E0E2-D536-40DC-A2F9-E20D3CFED1F3}.Debug|Any CPU.ActiveCfg = Debug
+		{01D2E0E2-D536-40DC-A2F9-E20D3CFED1F3}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

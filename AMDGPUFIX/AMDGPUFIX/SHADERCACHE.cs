@@ -41,13 +41,14 @@ namespace AMDGPUFIX
             // Count Profiles
             try
             {
-                shadercacheKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}" , writable: true);
+                shadercacheKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}");
+                if (shadercacheKey == null) { return -1; }
                 var profiles = shadercacheKey.GetSubKeyNames();
                 foreach (string profile in profiles)
                 {
                     if (profile.Length == 4 && profile.All(Char.IsDigit))
                     {
-                        shadercacheKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + profile + "\\UMD", writable: true);
+                        shadercacheKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + profile + "\\UMD");
                         if (shadercacheKey != null)
                         {
                             gpu_profiles.Add("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + profile + "\\UMD");
@@ -55,9 +56,9 @@ namespace AMDGPUFIX
                     }
                 }
             } 
-            catch
+            catch (Exception ex)
             {
-                MaterialMessageBox.Show(" Permission Denied!\r\n You are probably affected by a rootkit (virus)\r\n or User account that lacks permissions due to being managed by organisation.\r\n or Anti-Ransomware protection preventing registry access(such as Acronis True Image).\r\n Shader Cache Dropdown will be disabled to prevent any issues.");
+                MaterialMessageBox.Show($"{ex.Message + Environment.NewLine + ex.Source}\r\n Permission Denied!\r\n You are probably affected by a rootkit (virus)\r\n or User account that lacks permissions due to being managed by organisation.\r\n or Anti-Ransomware protection preventing registry access(such as Acronis True Image).\r\n Shader Cache Dropdown will be disabled to prevent any issues.");
                 return -1;
             }
             // Check Values
@@ -80,7 +81,7 @@ namespace AMDGPUFIX
                         if (result[1] == 0x00)
                         {
                             if (result[0] == 0x32)      // ON (32 00)
-                                return 0;  // Enabled
+                                return 0; // Enabled
                             else if (result[0] == 0x31) // Optimized (31 00)
                                 return 1; // Default
                             else if (result[0] == 0x30) // OFF (30 00)
@@ -88,11 +89,16 @@ namespace AMDGPUFIX
                         }
                         MaterialMessageBox.Show("Unknown ShaderCache value type detected in registry: " + BitConverter.ToString(result) + "\r\n could be future update changing the value. Please report this to RedDot3ND on github.");
                     }
+                    else if (result == null || result == new byte[0])
+                    {
+                        MaterialMessageBox.Show("ShaderCache value is null, using AMD Optimized as default value.\r\nDriver update removed this value.");
+                        return 1;
+                    }
                 }
                 else
                 {
                     MaterialMessageBox.Show("No ShaderCache profile has been set, using AMD Optimized as default value.\r\nDriver update removed this value.");
-                    return -1;
+                    return 1;
                 }
             }
             return -1;

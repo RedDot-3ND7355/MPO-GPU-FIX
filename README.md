@@ -86,6 +86,13 @@ Feel free to donate! Any amount will help <3
 [The link is right here!](https://www.paypal.com/donate/?hosted_button_id=ZURUG4V6F6LRN)
 
 ## Changelog
+v7.1(hotfix)
+- (Bugfix) Toggling ON ULPS for 9000 AMD GPU Series would still cause warning messages to show up
+- (Bugfix) Added additional checks to prevent AMD features being accessed on non-AMD GPUs 
+- (Bugfix) Detecting no ShaderCache settings within registry on AMD GPUs would trigger an error
+- (Bugfix) After prompt asking to run as admin, app would sometimes not be killed and proceed to error out
+- (Bugfix) DXMOD would load on startup (when not needed) and would throw permission denied prompt
+
 v7.0
 - HDAUDBUS.SYS MSI Switcher Interface added (for experienced users)
 - DX Switcher Interface added (for experienced users)

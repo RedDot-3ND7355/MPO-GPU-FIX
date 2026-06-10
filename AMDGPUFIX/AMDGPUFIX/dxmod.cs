@@ -8,7 +8,9 @@ namespace AMDGPUFIX
     {
         // Globals
         public readonly MaterialSkinManager materialSkinManager;
+        public bool disabled = false;
         // End
+
 
         public dxmod()
         {
@@ -20,6 +22,12 @@ namespace AMDGPUFIX
             materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
             // Detect and INI
             DXHandler.IniDXHandler();
+            if (DXHandler.ProfileCount() == 0)
+            {
+                disabled = true;
+                this.Close();
+                return;
+            }
             ApplyDetected();
             CheckAvailability();
         }
