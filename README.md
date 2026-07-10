@@ -86,6 +86,12 @@ Feel free to donate! Any amount will help <3
 [The link is right here!](https://www.paypal.com/donate/?hosted_button_id=ZURUG4V6F6LRN)
 
 ## Changelog
+v7.2(hotfix)
+- (Bugfix) Opening DXMOD window with no compatible drivers would throw error
+- Reworked detection logic for ShaderCache
+- Reworked detection logic for DXMOD
+
+
 v7.1(hotfix)
 - (Bugfix) Toggling ON ULPS for 9000 AMD GPU Series would still cause warning messages to show up
 - (Bugfix) Added additional checks to prevent AMD features being accessed on non-AMD GPUs 

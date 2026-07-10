@@ -35,7 +35,7 @@ namespace AMDGPUFIX
                 localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // Use 32 if 64 failed
             if (localMachine == null)
             {
-                MaterialMessageBox.Show("Error! Could not set registry base path due to lack of permission.");
+                MaterialMessageBox.Show("Error! ShaderCache Could not set registry base path due to lack of permission.");
                 return -1;
             }
             // Count Profiles
@@ -46,13 +46,12 @@ namespace AMDGPUFIX
                 var profiles = shadercacheKey.GetSubKeyNames();
                 foreach (string profile in profiles)
                 {
-                    if (profile.Length == 4 && profile.All(Char.IsDigit))
+                    if (profile.Length != 4 || !profile.All(char.IsDigit)) continue;
+                    string umdPath = $"SYSTEM\\CurrentControlSet\\Control\\Class\\{{4d36e968-e325-11ce-bfc1-08002be10318}}\\{profile}\\UMD";
+                    using (var key = localMachine.OpenSubKey(umdPath))
                     {
-                        shadercacheKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + profile + "\\UMD");
-                        if (shadercacheKey != null)
-                        {
-                            gpu_profiles.Add("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + profile + "\\UMD");
-                        }
+                        if (key != null)
+                            gpu_profiles.Add(umdPath);
                     }
                 }
             } 

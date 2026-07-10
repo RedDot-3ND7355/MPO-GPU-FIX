@@ -106,26 +106,27 @@ namespace AMDGPUFIX
             try
             {
                 dxnaviKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}");
+                if (dxnaviKey == null) return;
                 var profiles = dxnaviKey.GetSubKeyNames();
-                if (profiles == null) { return; }
                 foreach (string profile in profiles)
                 {
-                    if (profile.Length == 4 && profile.All(Char.IsDigit))
+                    if (profile.Length != 4 || !profile.All(char.IsDigit)) continue;
+                    using (var key = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + profile))
                     {
-                        D3DVendorName = (string[])localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + profile).GetValue("D3DVendorName");
-                        D3DVendorNameWow = (string[])localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + profile).GetValue("D3DVendorNameWow");
+                        if (key == null) continue;
+                        D3DVendorName = key.GetValue("D3DVendorName") as string[];
+                        D3DVendorNameWow = key.GetValue("D3DVendorNameWow") as string[];
                         if (D3DVendorName != null && D3DVendorNameWow != null)
-                        {
                             gpu_profiles.Add("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + profile);
-                        }
                     }
                 }
+                if (gpu_profiles.Count == 0) return;
                 DetectAvailable();
                 DetectCurrent();
             }
             catch (Exception ex)
             {
-                MaterialMessageBox.Show($"{ex.Message + Environment.NewLine + ex.Source}\r\n Permission Denied!\r\n You are probably affected by a rootkit (virus)\r\n or User account that lacks permissions due to being managed by organisation.\r\n or Anti-Ransomware protection preventing registry access(such as Acronis True Image).\r\n Shader Cache Dropdown will be disabled to prevent any issues.");
+                MaterialMessageBox.Show($"{ex.Message + Environment.NewLine + ex.InnerException}\r\n Permission Denied!\r\n You are probably affected by a rootkit (virus)\r\n or User account that lacks permissions due to being managed by organisation.\r\n or Anti-Ransomware protection preventing registry access(such as Acronis True Image).\r\n DXMOD will be disabled to prevent any issues.");
                 return;
             }
         }
