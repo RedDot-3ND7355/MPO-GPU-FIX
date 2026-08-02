@@ -87,6 +87,7 @@ Feel free to donate! Any amount will help <3
 
 ## Changelog
 v7.5
+- Upgraded Project to .NET 10
 - Complete UI redesign
 - Fixed DPI scaling issues
 - Refactored Main Window code
