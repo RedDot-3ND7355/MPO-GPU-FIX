@@ -67,7 +67,7 @@ namespace AMDGPUFIX
                                     {
                                         RegistryKey tmpKey2 = Registry.LocalMachine.OpenSubKey(reg_path_to + HWID + "\\" + PROFILE + "\\" + "UMD", writable: true);
                                         if (tmpKey2 != null)
-                                            Registry.LocalMachine.OpenSubKey(reg_path_to + HWID + "\\" + PROFILE + "\\", writable: true).SetValue("EnableUlps", enable ? "1" : "0", RegistryValueKind.DWord);
+                                            Registry.LocalMachine.OpenSubKey(reg_path_to + HWID + "\\" + PROFILE + "\\", writable: true).SetValue("EnableUlps", enable ? 1 : 0, RegistryValueKind.DWord);
                                     }
                         }
                 }

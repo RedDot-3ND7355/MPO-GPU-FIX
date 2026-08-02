@@ -11,5 +11,17 @@
     <ErrorReportUrlHistory />
     <FallbackCulture>en-US</FallbackCulture>
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
+    <_LastSelectedProfileId>C:\Users\Endless\source\repos\AMDGPUFIX\AMDGPUFIX\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Update="bsodfix.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="dxmod.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="NewForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-﻿using MaterialSkin.Controls;
+﻿// MaterialSkin usage removed from this file; using System.Windows.Forms.MessageBox instead
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -99,7 +99,7 @@ namespace AMDGPUFIX
                 localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // Use 32 if 64 failed
             if (localMachine == null)
             {
-                MaterialMessageBox.Show("Error! DX Navi Switches Could not set registry base path due to lack of permission.");
+                MessageBox.Show("Error! DX Navi Switches Could not set registry base path due to lack of permission.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             // Count Profiles
@@ -126,7 +126,7 @@ namespace AMDGPUFIX
             }
             catch (Exception ex)
             {
-                MaterialMessageBox.Show($"{ex.Message + Environment.NewLine + ex.InnerException}\r\n Permission Denied!\r\n You are probably affected by a rootkit (virus)\r\n or User account that lacks permissions due to being managed by organisation.\r\n or Anti-Ransomware protection preventing registry access(such as Acronis True Image).\r\n DXMOD will be disabled to prevent any issues.");
+                MessageBox.Show($"{ex.Message + Environment.NewLine + ex.InnerException}\r\n Permission Denied!\r\n You are probably affected by a rootkit (virus)\r\n or User account that lacks permissions due to being managed by organisation.\r\n or Anti-Ransomware protection preventing registry access(such as Acronis True Image).\r\n DXMOD will be disabled to prevent any issues.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
         }
@@ -193,7 +193,7 @@ namespace AMDGPUFIX
         {
             if (LastDX != CurrentDX)
             {
-                MaterialMessageBox.Show("GPU Adapter will be restarted! Save any unsaved projects to prevent any loss of data.");
+                MessageBox.Show("GPU Adapter will be restarted! Save any unsaved projects to prevent any loss of data.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 System.Diagnostics.Process process = new System.Diagnostics.Process();
                 System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
                 startInfo.WorkingDirectory = Environment.SystemDirectory;
@@ -202,13 +202,13 @@ namespace AMDGPUFIX
                 startInfo.Arguments = "/C C:\\Windows\\SysNative\\PNPUTIL /restart-device \"" + PNPDeviceID + "\"";
                 process.StartInfo = startInfo;
                 if (process.Start())
-                    MaterialMessageBox.Show("Changes applied successfully!");
+                    MessageBox.Show("Changes applied successfully!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 else
-                    MaterialMessageBox.Show("Failed to restart adapter, please reboot to apply changes!");
+                    MessageBox.Show("Failed to restart adapter, please reboot to apply changes!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             else
             {
-                MaterialMessageBox.Show("Changes reverted to prevent any issues due to missing driver files for selected profile OR selected profile is already in use.");
+                MessageBox.Show("Changes reverted to prevent any issues due to missing driver files for selected profile OR selected profile is already in use.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -459,8 +459,8 @@ namespace AMDGPUFIX
                     desired = original;
                     break;
                 }
-                else
-                    MessageBox.Show($"{filepath} exists");
+                //else
+                //    MessageBox.Show($"{filepath} exists");
             }
             return desired;
         }

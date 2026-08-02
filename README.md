@@ -86,6 +86,13 @@ Feel free to donate! Any amount will help <3
 [The link is right here!](https://www.paypal.com/donate/?hosted_button_id=ZURUG4V6F6LRN)
 
 ## Changelog
+v7.5
+- Complete UI redesign
+- Fixed DPI scaling issues
+- Refactored Main Window code
+- Reworked GPU detection (better multi-GPU / APU / brand handling)
+- (Bugfix) ULPS 9000 Series warning only when disabling ULPS for 9070
+
 v7.2(hotfix)
 - (Bugfix) Opening DXMOD window with no compatible drivers would throw error
 - Reworked detection logic for ShaderCache

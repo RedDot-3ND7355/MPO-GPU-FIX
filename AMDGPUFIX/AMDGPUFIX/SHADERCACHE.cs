@@ -1,12 +1,8 @@
-﻿using MaterialSkin.Controls;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace AMDGPUFIX
 {
@@ -35,7 +31,7 @@ namespace AMDGPUFIX
                 localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // Use 32 if 64 failed
             if (localMachine == null)
             {
-                MaterialMessageBox.Show("Error! ShaderCache Could not set registry base path due to lack of permission.");
+                MessageBox.Show("Error! ShaderCache Could not set registry base path due to lack of permission.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return -1;
             }
             // Count Profiles
@@ -54,10 +50,10 @@ namespace AMDGPUFIX
                             gpu_profiles.Add(umdPath);
                     }
                 }
-            } 
+            }
             catch (Exception ex)
             {
-                MaterialMessageBox.Show($"{ex.Message + Environment.NewLine + ex.Source}\r\n Permission Denied!\r\n You are probably affected by a rootkit (virus)\r\n or User account that lacks permissions due to being managed by organisation.\r\n or Anti-Ransomware protection preventing registry access(such as Acronis True Image).\r\n Shader Cache Dropdown will be disabled to prevent any issues.");
+                MessageBox.Show($"{ex.Message + Environment.NewLine + ex.Source}\r\n Permission Denied!\r\n You are probably affected by a rootkit (virus)\r\n or User account that lacks permissions due to being managed by organisation.\r\n or Anti-Ransomware protection preventing registry access(such as Acronis True Image).\r\n Shader Cache Dropdown will be disabled to prevent any issues.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return -1;
             }
             // Check Values
@@ -86,17 +82,17 @@ namespace AMDGPUFIX
                             else if (result[0] == 0x30) // OFF (30 00)
                                 return 2; // Disabled
                         }
-                        MaterialMessageBox.Show("Unknown ShaderCache value type detected in registry: " + BitConverter.ToString(result) + "\r\n could be future update changing the value. Please report this to RedDot3ND on github.");
+                        MessageBox.Show("Unknown ShaderCache value type detected in registry: " + BitConverter.ToString(result) + "\r\n could be future update changing the value. Please report this to RedDot3ND on github.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                     else if (result == null || result == new byte[0])
                     {
-                        MaterialMessageBox.Show("ShaderCache value is null, using AMD Optimized as default value.\r\nDriver update removed this value.");
+                        MessageBox.Show("ShaderCache value is null, using AMD Optimized as default value.\r\nDriver update removed this value.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return 1;
                     }
                 }
                 else
                 {
-                    MaterialMessageBox.Show("No ShaderCache profile has been set, using AMD Optimized as default value.\r\nDriver update removed this value.");
+                    MessageBox.Show("No ShaderCache profile has been set, using AMD Optimized as default value.\r\nDriver update removed this value.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return 1;
                 }
             }
@@ -116,7 +112,7 @@ namespace AMDGPUFIX
                     break;
                 case 1:
                     byteval = GetBytes("31-00");
-                    break; 
+                    break;
                 case 2:
                     byteval = GetBytes("30-00");
                     break;
