@@ -9,7 +9,8 @@ namespace AMDGPUFIX
     public class SHADERCACHE
     {
         private List<string> gpu_profiles = new List<string>();
-        private RegistryKey shadercacheKey = null;
+        private const string ClassGuid = "{4d36e968-e325-11ce-bfc1-08002be10318}";
+        string[] wheretocheck = { "SYSTEM\\CurrentControlSet", "SYSTEM\\ControlSet001" };
 
         // Value Table
         // 1 = AMD Optimized | 31-00
@@ -22,116 +23,134 @@ namespace AMDGPUFIX
             return gpu_profiles.Count;
         }
 
-        // Check last profile's value to return
-        public int CheckShaderCache()
+        private void LocateShaderCacheProfiles()
         {
-            // Registry Check
-            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64); // Use 64 first
-            if (localMachine == null)
-                localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // Use 32 if 64 failed
+            // Set Profiles
+            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64) // 64
+                     ?? RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // 32 fallback
             if (localMachine == null)
             {
                 MessageBox.Show("Error! ShaderCache Could not set registry base path due to lack of permission.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return -1;
+                return;
             }
-            // Count Profiles
             try
             {
-                shadercacheKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}");
-                if (shadercacheKey == null) { return -1; }
-                var profiles = shadercacheKey.GetSubKeyNames();
-                foreach (string profile in profiles)
+                foreach (var reg_path_to in wheretocheck)
                 {
-                    if (profile.Length != 4 || !profile.All(char.IsDigit)) continue;
-                    string umdPath = $"SYSTEM\\CurrentControlSet\\Control\\Class\\{{4d36e968-e325-11ce-bfc1-08002be10318}}\\{profile}\\UMD";
-                    using (var key = localMachine.OpenSubKey(umdPath))
+                    using (var key = localMachine.OpenSubKey($"{reg_path_to}\\Control\\Class\\{ClassGuid}"))
                     {
-                        if (key != null)
-                            gpu_profiles.Add(umdPath);
+                        if (key == null) continue;
+                        foreach (var profile in key.GetSubKeyNames().Where(x => x.Length == 4 && x.All(char.IsDigit)))
+                        {
+                            string umdPath = $"{reg_path_to}\\Control\\Class\\{ClassGuid}\\{profile}\\UMD";
+                            using (var checkKey = localMachine.OpenSubKey(umdPath))
+                                if (checkKey != null) gpu_profiles.Add(umdPath);
+                        }
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show($"{ex.Message + Environment.NewLine + ex.Source}\r\n Permission Denied!\r\n You are probably affected by a rootkit (virus)\r\n or User account that lacks permissions due to being managed by organisation.\r\n or Anti-Ransomware protection preventing registry access(such as Acronis True Image).\r\n Shader Cache Dropdown will be disabled to prevent any issues.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return -1;
+                MessageBox.Show("Permission Denied!\r\n You are probably affected by a rootkit (virus)\r\n or User account that lacks permissions due to being managed by organisation.\r\n or Anti-Ransomware protection preventing registry access(such as Acronis True Image).\r\n Shader Cache Dropdown will be disabled to prevent any issues.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            // Check Values
+        }
+
+        // Check last profile's value to return
+        public int CheckShaderCache()
+        {
+            // Locate Profiles
+            LocateShaderCacheProfiles();
+            if (gpu_profiles.Count == 0) return -1; // No profiles found
+
+            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64)
+                                     ?? RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+
             foreach (string profile in gpu_profiles)
             {
-                shadercacheKey = localMachine.OpenSubKey(profile, writable: true);
-                if (shadercacheKey != null && shadercacheKey.GetValue("ShaderCache") != null)
+                using (RegistryKey shadercacheKey = localMachine.OpenSubKey(profile, writable: true))
                 {
-                    byte[] result = new byte[0];
+                    if (shadercacheKey == null) continue;
+
+                    object rawValue = shadercacheKey.GetValue("ShaderCache");
+                    if (rawValue == null)
+                    {
+                        MessageBox.Show("No ShaderCache profile has been set, using AMD Optimized as default value.\r\nDriver update removed this value.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return 1; // Default
+                    }
+
                     var valueKind = shadercacheKey.GetValueKind("ShaderCache");
+
+                    // === Handle REG_BINARY (classic driver format) ===
                     if (valueKind == RegistryValueKind.Binary)
                     {
-                        var value = (byte[])shadercacheKey.GetValue("ShaderCache");
-                        result = value;
-                    }
-                    /* New detection */
-                    if (result != null && result.Length >= 2)
-                    {
-                        // Primary Check
-                        if (result[1] == 0x00)
+                        byte[] result = (byte[])rawValue;
+                        if (result == null || result.Length == 0)
                         {
-                            if (result[0] == 0x32)      // ON (32 00)
-                                return 0; // Enabled
-                            else if (result[0] == 0x31) // Optimized (31 00)
-                                return 1; // Default
-                            else if (result[0] == 0x30) // OFF (30 00)
-                                return 2; // Disabled
+                            MessageBox.Show("ShaderCache value is null, using AMD Optimized as default value.\r\nDriver update removed this value.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            return 1;
                         }
-                        MessageBox.Show("Unknown ShaderCache value type detected in registry: " + BitConverter.ToString(result) + "\r\n could be future update changing the value. Please report this to RedDot3ND on github.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                        if (result.Length >= 2 && result[1] == 0x00)
+                        {
+                            switch (result[0])
+                            {
+                                case 0x32: return 0; // ON
+                                case 0x31: return 1; // AMD Optimized
+                                case 0x30: return 2; // OFF
+                            }
+                        }
+
+                        // Unknown binary
+                        string hexString = BitConverter.ToString(result);
+                        MessageBox.Show($"Unknown ShaderCache binary value detected: {hexString}\r\nPlease report this to RedDot3ND on GitHub.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return -1;
                     }
-                    else if (result == null || result == new byte[0])
+
+                    // === Handle REG_SZ (Radeon Software rewritten format) ===
+                    if (valueKind == RegistryValueKind.String)
                     {
-                        MessageBox.Show("ShaderCache value is null, using AMD Optimized as default value.\r\nDriver update removed this value.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        return 1;
+                        string strVal = rawValue.ToString().Trim();
+
+                        switch (strVal)
+                        {
+                            case "2": return 0; // ON
+                            case "1": return 1; // AMD Optimized
+                            case "0": return 2; // OFF
+                            default:
+                                MessageBox.Show($"Unknown ShaderCache string value detected: \"{strVal}\"\r\nPlease report this to RedDot3ND on GitHub.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                return -1;
+                        }
                     }
-                }
-                else
-                {
-                    MessageBox.Show("No ShaderCache profile has been set, using AMD Optimized as default value.\r\nDriver update removed this value.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return 1;
+
+                    // Unsupported type
+                    MessageBox.Show($"Unsupported ShaderCache value type: {valueKind}\r\nPlease report this to RedDot3ND on GitHub.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return -1;
                 }
             }
-            return -1;
+
+            return -1; // No valid values detected
         }
 
         // Set value to all profiles
         public void ShaderCacheHandler(int value)
         {
-            byte[] byteval = null;
-            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-            // Table out values!
-            switch (value)
-            {
-                case 0:
-                    byteval = GetBytes("32-00");
-                    break;
-                case 1:
-                    byteval = GetBytes("31-00");
-                    break;
-                case 2:
-                    byteval = GetBytes("30-00");
-                    break;
-            }
-
-            // Set it!
+            // Table out byte vals and set it
+            byte[] byteval = value == 0 ? new byte[] { 0x32, 0x00 } : value == 1 ? new byte[] { 0x31, 0x00 } : new byte[] { 0x30, 0x00 };
+            string strVal = value == 0 ? "2" : value == 1 ? "1" : "0";
+            var localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64) // 64
+                            ?? RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // 32 fallback
             foreach (string profile in gpu_profiles)
-            {
-                shadercacheKey = localMachine.OpenSubKey(profile, writable: true);
-                if (shadercacheKey != null /*&& shadercacheKey.GetValue("ShaderCache") != null*/)
-                    shadercacheKey.SetValue("ShaderCache", byteval, RegistryValueKind.Binary);
-            }
-        }
-
-        // Convert Data to Byte[]
-        private byte[] GetBytes(string value)
-        {
-            var data = value.Split('-').Select(x => Convert.ToByte(x, 16)).ToArray();
-            return data;
+                try
+                {
+                    using (var key = localMachine.OpenSubKey(profile, true))
+                    {
+                        if (key?.GetValue("ShaderCache") != null && key?.GetValueKind("ShaderCache") == RegistryValueKind.String)
+                            key.SetValue("ShaderCache", strVal, RegistryValueKind.String);
+                        else
+                            key?.SetValue("ShaderCache", byteval, RegistryValueKind.Binary);
+                    }
+                }
+                catch { }
         }
     }
 }

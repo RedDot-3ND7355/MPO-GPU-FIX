@@ -86,6 +86,15 @@ Feel free to donate! Any amount will help <3
 [The link is right here!](https://www.paypal.com/donate/?hosted_button_id=ZURUG4V6F6LRN)
 
 ## Changelog
+v7.6
+- Refactored AMD Shader Cache Handling
+- Added String Support for Shader Cache Handling
+- Added Multi Control Sets for Shader Cache Handling
+- Refactored AMD ULPS Handling
+- Added Handling of Non Applicable Registry Key for EnableUlps
+- Added Force Direct Flip Switch for Windows Gaming Tweaks
+- Added RadeonSoftware and RadeonSettings Conflict Detection
+
 v7.5
 - Upgraded Project to .NET 10
 - Complete UI redesign

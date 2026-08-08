@@ -1,78 +1,71 @@
 ﻿using Microsoft.Win32;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace AMDGPUFIX
 {
     public class ULPS
     {
-        // Check if AMD is detected and ULPS is on or not
-        public bool CheckULPS()
-        {
-            string[] wheretocheck = new string[4] { "SYSTEM\\ControlSet001\\Control\\Class\\", "SYSTEM\\ControlSet001\\Control\\Video\\", "SYSTEM\\CurrentControlSet\\Control\\Video\\", "SYSTEM\\CurrentControlSet\\Control\\Class\\" };
-            foreach (string reg_path_to in wheretocheck)
-            {
-                try
-                {
-                    RegistryKey localMachine = Registry.LocalMachine;
-                    localMachine = localMachine.OpenSubKey(reg_path_to, writable: true);
-                    if (localMachine != null)
-                        foreach (string HWID in localMachine.GetSubKeyNames())
-                        {
-                            RegistryKey tmpKey = Registry.LocalMachine.OpenSubKey(reg_path_to + HWID + "\\", writable: true);
-                            if (tmpKey != null)
-                                foreach (string PROFILE in tmpKey.GetSubKeyNames())
-                                    if (PROFILE.Length == 4 && IsAllDigits(PROFILE))
-                                    {
-                                        RegistryKey tmpKey2 = Registry.LocalMachine.OpenSubKey(reg_path_to + HWID + "\\" + PROFILE + "\\" + "UMD", writable: true);
-                                        if (tmpKey2 != null)
-                                            if (Registry.LocalMachine.OpenSubKey(reg_path_to + HWID + "\\" + PROFILE + "\\", writable: true).GetValue("EnableUlps") != null)
+        private List<string> ulps_profiles = new List<string>();
+        private const string ClassGuid = "{4d36e968-e325-11ce-bfc1-08002be10318}";
 
-                                                if (Registry.LocalMachine.OpenSubKey(reg_path_to + HWID + "\\" + PROFILE + "\\", writable: true).GetValue("EnableUlps").ToString() == "1")
-                                                    return true;
-                                                else
-                                                    return false;
-                                    }
-                        }
+        // Locate ULPS profiles
+        private void LocateUlpsProfiles()
+        {
+            string[] wheretocheck = { "SYSTEM\\CurrentControlSet", "SYSTEM\\ControlSet001" };
+            var localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64) // 64
+                ?? RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // 32 fallback
+            try
+            {
+                foreach (var reg_path_to in wheretocheck)
+                {
+                    string basePath = $"{reg_path_to}\\Control\\Class\\{ClassGuid}";
+                    using var key = localMachine.OpenSubKey(basePath);
+                    if (key == null) continue;
+                    var profiles = key.GetSubKeyNames().Where(x => x.Length == 4 && x.All(char.IsDigit));
+                    foreach (var profile in profiles)
+                    {
+                        string profilePath = $"{basePath}\\{profile}";
+                        using var checkKey = localMachine.OpenSubKey($"{profilePath}\\UMD");
+                        if (checkKey != null) ulps_profiles.Add(profilePath);
+                    }
                 }
-                catch { }
             }
-            return true;
+            catch { }
         }
 
-        // Verify Digits
-        private static bool IsAllDigits(string s)
+        // Check if ULPS is on or not
+        public bool CheckULPS()
         {
-            foreach (char c in s)
-                if (!char.IsDigit(c))
-                    return false;
+            LocateUlpsProfiles();
+            if (ulps_profiles.Count == 0) return true; // No profiles found, assume ULPS is enabled by default
+
+            var localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64) // 64
+                ?? RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // 32 fallback
+            foreach (string path in ulps_profiles)
+            {
+                using var key = localMachine.OpenSubKey(path);
+                if (key?.GetValue("EnableUlps")?.ToString() == "0") return false;
+            }
             return true;
         }
 
         // Enable & Disable Toggle Handler
         public void ULPSHandler(bool enable)
         {
-            try
+            var localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64) // 64
+                ?? RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // 32 fallback
+            foreach (string profile in ulps_profiles)
             {
-                string[] wheretocheck = new string[4] { "SYSTEM\\ControlSet001\\Control\\Class\\", "SYSTEM\\ControlSet001\\Control\\Video\\", "SYSTEM\\CurrentControlSet\\Control\\Video\\", "SYSTEM\\CurrentControlSet\\Control\\Class\\" };
-                // Find valid Class Path
-                foreach (string reg_path_to in wheretocheck)
+                try
                 {
-                    RegistryKey localMachine = Registry.LocalMachine.OpenSubKey(reg_path_to, writable: true);
-                    if (localMachine != null)
-                        foreach (string HWID in localMachine.GetSubKeyNames())
-                        {
-                            RegistryKey tmpKey = Registry.LocalMachine.OpenSubKey(reg_path_to + HWID + "\\", writable: true);
-                            if (tmpKey != null)
-                                foreach (string PROFILE in tmpKey.GetSubKeyNames())
-                                    if (PROFILE.Length == 4 && IsAllDigits(PROFILE))
-                                    {
-                                        RegistryKey tmpKey2 = Registry.LocalMachine.OpenSubKey(reg_path_to + HWID + "\\" + PROFILE + "\\" + "UMD", writable: true);
-                                        if (tmpKey2 != null)
-                                            Registry.LocalMachine.OpenSubKey(reg_path_to + HWID + "\\" + PROFILE + "\\", writable: true).SetValue("EnableUlps", enable ? 1 : 0, RegistryValueKind.DWord);
-                                    }
-                        }
+                    using var key = localMachine.OpenSubKey(profile, writable: true);
+                    if (key?.GetValue("EnableUlps") != null) key.SetValue("EnableUlps", enable ? 1 : 0, RegistryValueKind.DWord);
+                    // Make sure AMD doesn't override the setting by adding a backup value
+                    if (key?.GetValue("EnableUlps_NA") != null) key?.SetValue("EnableUlps_NA", enable ? "1" : "0", RegistryValueKind.String);
                 }
+                catch { }
             }
-            catch { }
         }
     }
 }

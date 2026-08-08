@@ -18,6 +18,7 @@ namespace AMDGPUFIX
         RegistryKey overlayKey = null;
         RegistryKey hagsKey = null;
         RegistryKey tdrLevel = null;
+        RegistryKey directFlipKey = null;
         // End Globals
 
         // Open URL in default browser
@@ -71,49 +72,59 @@ namespace AMDGPUFIX
         public void DisableOverlaysFixHandler(bool enable)
         {
             if (enable)
-                overlayKey.SetValue("DisableOverlays", 0x00000001, RegistryValueKind.DWord);
+                overlayKey?.SetValue("DisableOverlays", 0x00000001, RegistryValueKind.DWord);
             else
-                if (overlayKey.GetValue("DisableOverlays") != null)
-                    overlayKey.DeleteValue("DisableOverlays");
+                if (overlayKey?.GetValue("DisableOverlays") != null)
+                    overlayKey?.DeleteValue("DisableOverlays");
         }
+
+        // Force Direct Flip Handler
+        public void ForceDirectFlipHandler(bool enable)
+        {
+            if (enable)
+                directFlipKey?.SetValue("GameDVR_FSEBehaviorMode", 0x00000002, RegistryValueKind.DWord);
+            else
+                directFlipKey?.SetValue("GameDVR_FSEBehaviorMode", 0x00000000, RegistryValueKind.DWord);
+        }
+
 
         // HAGS Fix Handler
         public void HAGSFixHandler(bool enable)
         {
             if (enable)
-                hagsKey.SetValue("HwSchMode", 0x00000001, RegistryValueKind.DWord);
+                hagsKey?.SetValue("HwSchMode", 0x00000001, RegistryValueKind.DWord);
             else
-                hagsKey.SetValue("HwSchMode", 0x00000002, RegistryValueKind.DWord);
+                hagsKey?.SetValue("HwSchMode", 0x00000002, RegistryValueKind.DWord);
         }
 
         // TDR Fix Handler
         public void TDRFixHandler(bool enable)
         {
             if (enable)
-                tdrKey.SetValue("TdrDelay", 0x0000000A, RegistryValueKind.DWord);
+                tdrKey?.SetValue("TdrDelay", 0x0000000A, RegistryValueKind.DWord);
             else
-                if (tdrKey.GetValue("TdrDelay") != null)
-                    tdrKey.DeleteValue("TdrDelay");
+                if (tdrKey?.GetValue("TdrDelay") != null)
+                    tdrKey?.DeleteValue("TdrDelay");
         }
 
         // OverlayMinFPS Fix Handler
         public void OverlayMinFPSFixHandler(bool enable)
         {
             if (enable)
-                minfpsKey.SetValue("OverlayMinFPS", 0x00000000, RegistryValueKind.DWord);
+                minfpsKey?.SetValue("OverlayMinFPS", 0x00000000, RegistryValueKind.DWord);
             else
-                if (minfpsKey.GetValue("OverlayMinFPS") != null)
-                    minfpsKey.DeleteValue("OverlayMinFPS");
+                if (minfpsKey?.GetValue("OverlayMinFPS") != null)
+                    minfpsKey?.DeleteValue("OverlayMinFPS");
         }
 
         // MPO Fix Handler
         public void MPOFixHandler(bool enable)
         {
             if (enable)
-                defaultKey.SetValue("OverlayTestMode", 0x00000005, RegistryValueKind.DWord);
+                defaultKey?.SetValue("OverlayTestMode", 0x00000005, RegistryValueKind.DWord);
             else
-                if (defaultKey.GetValue("OverlayTestMode") != null)
-                    defaultKey.DeleteValue("OverlayTestMode");
+                if (defaultKey?.GetValue("OverlayTestMode") != null)
+                    defaultKey?.DeleteValue("OverlayTestMode");
         }
 
         // Shader Cache Handler
@@ -149,9 +160,10 @@ namespace AMDGPUFIX
         // Detect OverlayMinFPS Fix
         public bool DetectOverlayMinFPSFix()
         {
-            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64) // 64
+                     ?? RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // 32 fallback
             minfpsKey = localMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\DWM\\", writable: true);
-            if (minfpsKey.GetValue("OverlayMinFPS") != null)
+            if (minfpsKey?.GetValue("OverlayMinFPS") != null)
             {
                 string val = minfpsKey.GetValue("OverlayMinFPS").ToString();
                 if (int.TryParse(val, out int result))
@@ -161,12 +173,29 @@ namespace AMDGPUFIX
             return false;
         }
 
+        // Detect Force Direct Flip
+        public bool DetectForceDirectFlip()
+        {
+            RegistryKey currentUser = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64) // 64
+                     ?? RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32); // 32 fallback
+            directFlipKey = currentUser.OpenSubKey("System\\GameConfigStore", writable: true);
+            if (directFlipKey?.GetValue("GameDVR_FSEBehaviorMode") != null)
+            {
+                string val = directFlipKey.GetValue("GameDVR_FSEBehaviorMode").ToString();
+                if (int.TryParse(val, out int result))
+                    if (result == 2)
+                        return true;
+            }
+            return false;
+        }
+
         // Detect MPO Fix
         public bool DetectMPOFix()
         {
-            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64) // 64
+                     ?? RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // 32 fallback
             defaultKey = localMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\DWM\\", writable: true);
-            if (defaultKey.GetValue("OverlayTestMode") != null)
+            if (defaultKey?.GetValue("OverlayTestMode") != null)
             {
                 string val = defaultKey.GetValue("OverlayTestMode").ToString();
                 if (int.TryParse(val, out int result))
@@ -179,9 +208,10 @@ namespace AMDGPUFIX
         // Detect Disable Overlays
         public bool DetectDisableOverlays()
         {
-            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64) // 64
+                     ?? RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // 32 fallback
             overlayKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", writable: true);
-            if (overlayKey.GetValue("DisableOverlays") != null)
+            if (overlayKey?.GetValue("DisableOverlays") != null)
             {
                 string val = overlayKey.GetValue("DisableOverlays").ToString();
                 if (int.TryParse(val, out int result))
@@ -194,9 +224,10 @@ namespace AMDGPUFIX
         // Detect HAGS Fix
         public bool DetectHAGSFix()
         {
-            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64) // 64
+                     ?? RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // 32 fallback
             hagsKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", writable: true);
-            if (hagsKey.GetValue("HwSchMode") != null)
+            if (hagsKey?.GetValue("HwSchMode") != null)
             {
                 string val = hagsKey.GetValue("HwSchMode").ToString();
                 if (int.TryParse(val, out int result))
@@ -209,9 +240,10 @@ namespace AMDGPUFIX
         // Detect TDR Fix
         public bool DetectTDRFix()
         {
-            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64) // 64
+                     ?? RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // 32 fallback
             tdrKey = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", writable: true);
-            if (tdrKey.GetValue("TdrDelay") != null)
+            if (tdrKey?.GetValue("TdrDelay") != null)
             {
                 string val = tdrKey.GetValue("TdrDelay").ToString();
                 if (int.TryParse(val, out int result))
@@ -224,11 +256,12 @@ namespace AMDGPUFIX
         // Detect TDL Level
         public int DetectTDRLevel()
         {
-            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64) // 64
+                     ?? RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); // 32 fallback 
             tdrLevel = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", writable: true);
-            if (tdrLevel.GetValue("TdrLevel") != null)
+            if (tdrLevel?.GetValue("TdrLevel") != null)
             {
-                string val = tdrLevel.GetValue("TdrLevel").ToString();
+                string val = tdrLevel?.GetValue("TdrLevel").ToString();
                 if (int.TryParse(val, out int result))
                     switch (result)
                     {

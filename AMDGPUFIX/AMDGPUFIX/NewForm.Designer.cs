@@ -56,6 +56,10 @@
             shaderCacheHelpButton = new ReaLTaiizor.Controls.MaterialButton();
             shaderCacheDropdown = new ReaLTaiizor.Controls.MaterialComboBox();
             ulpsSwitch = new ReaLTaiizor.Controls.MaterialSwitch();
+            materialCard3 = new ReaLTaiizor.Controls.MaterialCard();
+            materialLabel3 = new ReaLTaiizor.Controls.MaterialLabel();
+            materialButton5 = new ReaLTaiizor.Controls.MaterialButton();
+            forceDirectFlipSwitch = new ReaLTaiizor.Controls.MaterialSwitch();
             materialCard4 = new ReaLTaiizor.Controls.MaterialCard();
             materialButton10 = new ReaLTaiizor.Controls.MaterialButton();
             materialButton2 = new ReaLTaiizor.Controls.MaterialButton();
@@ -72,6 +76,7 @@
             panel1.SuspendLayout();
             materialCard2.SuspendLayout();
             amdCard.SuspendLayout();
+            materialCard3.SuspendLayout();
             materialCard4.SuspendLayout();
             materialCard5.SuspendLayout();
             SuspendLayout();
@@ -83,6 +88,7 @@
             flowLayoutPanel1.Controls.Add(materialCard1);
             flowLayoutPanel1.Controls.Add(materialCard2);
             flowLayoutPanel1.Controls.Add(amdCard);
+            flowLayoutPanel1.Controls.Add(materialCard3);
             flowLayoutPanel1.Controls.Add(materialCard4);
             flowLayoutPanel1.Controls.Add(materialCard5);
             flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -90,7 +96,7 @@
             flowLayoutPanel1.Location = new System.Drawing.Point(3, 24);
             flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new System.Drawing.Size(419, 528);
+            flowLayoutPanel1.Size = new System.Drawing.Size(419, 621);
             flowLayoutPanel1.TabIndex = 1;
             flowLayoutPanel1.WrapContents = false;
             // 
@@ -248,7 +254,7 @@
             materialCard2.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
             materialCard2.Name = "materialCard2";
             materialCard2.Padding = new System.Windows.Forms.Padding(14);
-            materialCard2.Size = new System.Drawing.Size(407, 130);
+            materialCard2.Size = new System.Drawing.Size(407, 128);
             materialCard2.TabIndex = 1;
             // 
             // tdrLevelDropDown
@@ -322,7 +328,7 @@
             materialButton7.HighEmphasis = true;
             materialButton7.Icon = null;
             materialButton7.IconType = ReaLTaiizor.Controls.MaterialButton.MaterialIconType.Rebase;
-            materialButton7.Location = new System.Drawing.Point(363, 81);
+            materialButton7.Location = new System.Drawing.Point(363, 79);
             materialButton7.Margin = new System.Windows.Forms.Padding(0);
             materialButton7.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
             materialButton7.Name = "materialButton7";
@@ -344,7 +350,7 @@
             materialButton4.HighEmphasis = true;
             materialButton4.Icon = null;
             materialButton4.IconType = ReaLTaiizor.Controls.MaterialButton.MaterialIconType.Rebase;
-            materialButton4.Location = new System.Drawing.Point(150, 81);
+            materialButton4.Location = new System.Drawing.Point(150, 79);
             materialButton4.Margin = new System.Windows.Forms.Padding(0);
             materialButton4.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
             materialButton4.Name = "materialButton4";
@@ -383,7 +389,7 @@
             // 
             disableOverlaysSwitch.AutoSize = true;
             disableOverlaysSwitch.Depth = 0;
-            disableOverlaysSwitch.Location = new System.Drawing.Point(184, 79);
+            disableOverlaysSwitch.Location = new System.Drawing.Point(184, 77);
             disableOverlaysSwitch.Margin = new System.Windows.Forms.Padding(0);
             disableOverlaysSwitch.MouseLocation = new System.Drawing.Point(-1, -1);
             disableOverlaysSwitch.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
@@ -460,7 +466,7 @@
             amdCard.Controls.Add(ulpsSwitch);
             amdCard.Depth = 0;
             amdCard.ForeColor = System.Drawing.Color.FromArgb(222, 0, 0, 0);
-            amdCard.Location = new System.Drawing.Point(5, 237);
+            amdCard.Location = new System.Drawing.Point(5, 235);
             amdCard.Margin = new System.Windows.Forms.Padding(5, 2, 5, 2);
             amdCard.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
             amdCard.Name = "amdCard";
@@ -490,7 +496,7 @@
             ulpsHelpButton.HighEmphasis = true;
             ulpsHelpButton.Icon = null;
             ulpsHelpButton.IconType = ReaLTaiizor.Controls.MaterialButton.MaterialIconType.Rebase;
-            ulpsHelpButton.Location = new System.Drawing.Point(157, 42);
+            ulpsHelpButton.Location = new System.Drawing.Point(158, 42);
             ulpsHelpButton.Margin = new System.Windows.Forms.Padding(0);
             ulpsHelpButton.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
             ulpsHelpButton.Name = "ulpsHelpButton";
@@ -586,6 +592,77 @@
             ulpsSwitch.UseVisualStyleBackColor = true;
             ulpsSwitch.CheckedChanged += ulpsSwitch_CheckedChanged;
             // 
+            // materialCard3
+            // 
+            materialCard3.AutoSize = true;
+            materialCard3.BackColor = System.Drawing.Color.FromArgb(255, 255, 255);
+            materialCard3.Controls.Add(materialLabel3);
+            materialCard3.Controls.Add(materialButton5);
+            materialCard3.Controls.Add(forceDirectFlipSwitch);
+            materialCard3.Depth = 0;
+            materialCard3.ForeColor = System.Drawing.Color.FromArgb(222, 0, 0, 0);
+            materialCard3.Location = new System.Drawing.Point(5, 330);
+            materialCard3.Margin = new System.Windows.Forms.Padding(5, 2, 5, 2);
+            materialCard3.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
+            materialCard3.Name = "materialCard3";
+            materialCard3.Padding = new System.Windows.Forms.Padding(14);
+            materialCard3.Size = new System.Drawing.Size(407, 91);
+            materialCard3.TabIndex = 26;
+            // 
+            // materialLabel3
+            // 
+            materialLabel3.AutoSize = true;
+            materialLabel3.Depth = 0;
+            materialLabel3.Font = new System.Drawing.Font("Roboto Medium", 20F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
+            materialLabel3.FontType = ReaLTaiizor.Manager.MaterialSkinManager.FontType.H6;
+            materialLabel3.Location = new System.Drawing.Point(14, 14);
+            materialLabel3.Margin = new System.Windows.Forms.Padding(2, 0, 0, 2);
+            materialLabel3.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
+            materialLabel3.Name = "materialLabel3";
+            materialLabel3.Size = new System.Drawing.Size(230, 24);
+            materialLabel3.TabIndex = 18;
+            materialLabel3.Text = "Windows Gaming Tweaks";
+            // 
+            // materialButton5
+            // 
+            materialButton5.AutoSize = false;
+            materialButton5.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            materialButton5.Density = ReaLTaiizor.Controls.MaterialButton.MaterialButtonDensity.Default;
+            materialButton5.Depth = 0;
+            materialButton5.HighEmphasis = true;
+            materialButton5.Icon = null;
+            materialButton5.IconType = ReaLTaiizor.Controls.MaterialButton.MaterialIconType.Rebase;
+            materialButton5.Location = new System.Drawing.Point(363, 42);
+            materialButton5.Margin = new System.Windows.Forms.Padding(0);
+            materialButton5.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
+            materialButton5.Name = "materialButton5";
+            materialButton5.NoAccentTextColor = System.Drawing.Color.Empty;
+            materialButton5.Size = new System.Drawing.Size(30, 30);
+            materialButton5.TabIndex = 35;
+            materialButton5.Text = "?";
+            materialButton5.Type = ReaLTaiizor.Controls.MaterialButton.MaterialButtonType.Contained;
+            materialButton5.UseAccentColor = false;
+            materialButton5.UseVisualStyleBackColor = true;
+            materialButton5.Click += materialButton5_Click_1;
+            // 
+            // forceDirectFlipSwitch
+            // 
+            forceDirectFlipSwitch.AutoSize = true;
+            forceDirectFlipSwitch.Depth = 0;
+            forceDirectFlipSwitch.Location = new System.Drawing.Point(17, 40);
+            forceDirectFlipSwitch.Margin = new System.Windows.Forms.Padding(0);
+            forceDirectFlipSwitch.MouseLocation = new System.Drawing.Point(-1, -1);
+            forceDirectFlipSwitch.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
+            forceDirectFlipSwitch.Name = "forceDirectFlipSwitch";
+            forceDirectFlipSwitch.Ripple = true;
+            forceDirectFlipSwitch.Size = new System.Drawing.Size(317, 37);
+            forceDirectFlipSwitch.TabIndex = 34;
+            forceDirectFlipSwitch.Text = "Force Direct Flip (FSEBehaviorMode)";
+            forceDirectFlipSwitch.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            forceDirectFlipSwitch.UseAccentColor = false;
+            forceDirectFlipSwitch.UseVisualStyleBackColor = true;
+            forceDirectFlipSwitch.CheckedChanged += forceDirectFlipSwitch_CheckedChanged;
+            // 
             // materialCard4
             // 
             materialCard4.AutoSize = true;
@@ -597,7 +674,7 @@
             materialCard4.Controls.Add(materialLabel6);
             materialCard4.Depth = 0;
             materialCard4.ForeColor = System.Drawing.Color.FromArgb(222, 0, 0, 0);
-            materialCard4.Location = new System.Drawing.Point(5, 332);
+            materialCard4.Location = new System.Drawing.Point(5, 425);
             materialCard4.Margin = new System.Windows.Forms.Padding(5, 2, 5, 2);
             materialCard4.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
             materialCard4.Name = "materialCard4";
@@ -711,7 +788,7 @@
             materialCard5.Controls.Add(materialLabel7);
             materialCard5.Depth = 0;
             materialCard5.ForeColor = System.Drawing.Color.FromArgb(222, 0, 0, 0);
-            materialCard5.Location = new System.Drawing.Point(5, 427);
+            materialCard5.Location = new System.Drawing.Point(5, 520);
             materialCard5.Margin = new System.Windows.Forms.Padding(5, 2, 5, 7);
             materialCard5.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
             materialCard5.Name = "materialCard5";
@@ -796,7 +873,7 @@
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             AutoSize = true;
             AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            ClientSize = new System.Drawing.Size(425, 555);
+            ClientSize = new System.Drawing.Size(425, 648);
             Controls.Add(flowLayoutPanel1);
             FormStyle = ReaLTaiizor.Enum.Material.FormStyles.ActionBar_None;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
@@ -816,6 +893,8 @@
             materialCard2.PerformLayout();
             amdCard.ResumeLayout(false);
             amdCard.PerformLayout();
+            materialCard3.ResumeLayout(false);
+            materialCard3.PerformLayout();
             materialCard4.ResumeLayout(false);
             materialCard4.PerformLayout();
             materialCard5.ResumeLayout(false);
@@ -865,5 +944,9 @@
         private ReaLTaiizor.Controls.MaterialButton materialButton6;
         private ReaLTaiizor.Controls.MaterialButton driverDlButton;
         private ReaLTaiizor.Controls.MaterialLabel materialLabel2;
+        private ReaLTaiizor.Controls.MaterialButton materialButton5;
+        private ReaLTaiizor.Controls.MaterialSwitch forceDirectFlipSwitch;
+        private ReaLTaiizor.Controls.MaterialCard materialCard3;
+        private ReaLTaiizor.Controls.MaterialLabel materialLabel3;
     }
 }

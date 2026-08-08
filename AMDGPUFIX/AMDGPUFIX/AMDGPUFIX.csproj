@@ -11,8 +11,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <StartupObject>AMDGPUFIX.Program</StartupObject>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <!-- File version still comes from Properties\AssemblyInfo.cs -->
-    <ApplicationVersion>7.5.0</ApplicationVersion>
+	<!-- File version still comes from Properties\AssemblyInfo.cs -->
+    <ApplicationVersion>7.6.0</ApplicationVersion>
   </PropertyGroup>
 
   <ItemGroup>

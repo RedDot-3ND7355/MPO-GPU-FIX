@@ -2,6 +2,7 @@
 using ReaLTaiizor.Manager;
 using System;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace AMDGPUFIX
 {
@@ -28,6 +29,8 @@ namespace AMDGPUFIX
             GPUDetect();
             // DWM Handling
             DWMHandling();
+            // DVR Handling
+            DVRHandling();
             // GPU Driver Handling
             GPUDriverHandling();
             // Force Layout Update
@@ -55,6 +58,13 @@ namespace AMDGPUFIX
             tdrLevelDropDown.SelectedIndex = UIHandles.DetectTDRLevel();
         }
 
+        // DVR Behavior Handling
+        private void DVRHandling()
+        {
+            // Detect Force Direct Flip
+            forceDirectFlipSwitch.Checked = UIHandles.DetectForceDirectFlip();
+        }
+
         // Desktop Window Manager Handling
         private void DWMHandling()
         {
@@ -75,6 +85,9 @@ namespace AMDGPUFIX
             // AMD FEATURES
             if (GPUDetection.isAMDGpu)
             {
+                // Check for Adrenalin Conflict
+                if (RadeonConflictHelper.NeutralizeOldRadeonSettings())
+                    MessageBox.Show("Old RadeonSettings.exe was renamed to prevent registry conflicts with Adrenalin.", "Info");
                 // DXMOD Button
                 dxModButton.Enabled = true;
                 // AMD CARD
@@ -139,6 +152,10 @@ namespace AMDGPUFIX
         private void materialButton11_Click(object sender, EventArgs e) =>
             UIHandles.OpenURL("https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/TDRLevel");
 
+        // Open Force Direct Flip WIKI Button
+        private void materialButton5_Click_1(object sender, EventArgs e) =>
+            UIHandles.OpenURL("https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/Force-Direct-Flip");
+
         // AMD ULPS Switch Handler
         private void ulpsSwitch_CheckedChanged(object sender, EventArgs e)
         {
@@ -193,6 +210,13 @@ namespace AMDGPUFIX
         {
             if (!AppStarted) return;
             UIHandles.TDRLevelHandler(tdrLevelDropDown.SelectedIndex);
+        }
+
+        // Force Direct Flip Switch Handler
+        private void forceDirectFlipSwitch_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!AppStarted) return;
+            UIHandles.ForceDirectFlipHandler(forceDirectFlipSwitch.Checked);
         }
     }
 }
