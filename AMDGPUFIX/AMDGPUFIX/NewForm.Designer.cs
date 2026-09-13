@@ -913,7 +913,6 @@
         private ReaLTaiizor.Controls.MaterialLabel materialLabel1;
         private ReaLTaiizor.Controls.MaterialLabel gpuName;
         private ReaLTaiizor.Controls.MaterialLabel gpuVersion;
-        private ReaLTaiizor.Controls.MaterialFloatingActionButton materialFloatingActionButton2;
         private ReaLTaiizor.Controls.MaterialLabel materialLabel5;
         private ReaLTaiizor.Controls.MaterialComboBox shaderCacheDropdown;
         private ReaLTaiizor.Controls.MaterialSwitch ulpsSwitch;
@@ -922,17 +921,9 @@
         private ReaLTaiizor.Controls.MaterialSwitch hagsFixSwitch;
         private ReaLTaiizor.Controls.MaterialSwitch tdrFixSwitch;
         private ReaLTaiizor.Controls.MaterialLabel materialLabel4;
-        private ReaLTaiizor.Controls.MaterialButton ulpsHelpButton;
-        private ReaLTaiizor.Controls.MaterialButton shaderCacheHelpButton;
-        private ReaLTaiizor.Controls.MaterialButton materialButton11;
-        private ReaLTaiizor.Controls.MaterialButton materialButton7;
-        private ReaLTaiizor.Controls.MaterialButton materialButton4;
-        private ReaLTaiizor.Controls.MaterialButton materialButton3;
         private ReaLTaiizor.Controls.MaterialCard materialCard4;
         private ReaLTaiizor.Controls.MaterialLabel materialLabel6;
         private ReaLTaiizor.Controls.MaterialCard materialCard5;
-        private ReaLTaiizor.Controls.MaterialButton materialButton10;
-        private ReaLTaiizor.Controls.MaterialButton materialButton2;
         private ReaLTaiizor.Controls.MaterialSwitch mpoFixSwitch;
         private ReaLTaiizor.Controls.MaterialSwitch overlayMinFPSFixSwitch;
         private ReaLTaiizor.Controls.MaterialLabel materialLabel7;
@@ -941,12 +932,21 @@
         private ReaLTaiizor.Controls.MaterialLabel materialLabel8;
         private ReaLTaiizor.Controls.MaterialLabel materialLabel9;
         private System.Windows.Forms.Panel panel1;
-        private ReaLTaiizor.Controls.MaterialButton materialButton6;
-        private ReaLTaiizor.Controls.MaterialButton driverDlButton;
         private ReaLTaiizor.Controls.MaterialLabel materialLabel2;
-        private ReaLTaiizor.Controls.MaterialButton materialButton5;
         private ReaLTaiizor.Controls.MaterialSwitch forceDirectFlipSwitch;
         private ReaLTaiizor.Controls.MaterialCard materialCard3;
         private ReaLTaiizor.Controls.MaterialLabel materialLabel3;
+        public ReaLTaiizor.Controls.MaterialFloatingActionButton materialFloatingActionButton2;
+        public ReaLTaiizor.Controls.MaterialButton materialButton6;
+        public ReaLTaiizor.Controls.MaterialButton driverDlButton;
+        public ReaLTaiizor.Controls.MaterialButton materialButton11;
+        public ReaLTaiizor.Controls.MaterialButton ulpsHelpButton;
+        public ReaLTaiizor.Controls.MaterialButton materialButton2;
+        public ReaLTaiizor.Controls.MaterialButton materialButton10;
+        public ReaLTaiizor.Controls.MaterialButton materialButton5;
+        public ReaLTaiizor.Controls.MaterialButton materialButton7;
+        public ReaLTaiizor.Controls.MaterialButton materialButton3;
+        public ReaLTaiizor.Controls.MaterialButton materialButton4;
+        public ReaLTaiizor.Controls.MaterialButton shaderCacheHelpButton;
     }
 }

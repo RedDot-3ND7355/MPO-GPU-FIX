@@ -21,6 +21,14 @@ namespace AMDGPUFIX
         RegistryKey directFlipKey = null;
         // End Globals
 
+        // System reboot confirmation dialog
+        public void ShowRebootConfirmationDialog()
+        {
+            DialogResult result = MessageBox.Show("Do you want to reboot now?", "Reboot Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (result == DialogResult.Yes)
+                Process.Start(new ProcessStartInfo("shutdown", "/r") { CreateNoWindow = true, UseShellExecute = false });
+        }
+
         // Open URL in default browser
         public void OpenURL(string url)
         {

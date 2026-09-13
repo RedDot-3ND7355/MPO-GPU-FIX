@@ -86,6 +86,10 @@ Feel free to donate! Any amount will help <3
 [The link is right here!](https://www.paypal.com/donate/?hosted_button_id=ZURUG4V6F6LRN)
 
 ## Changelog
+v7.7
+- (Request) Added Reboot Confirmation Dialog
+- (Request) Added Tooltips
+
 v7.6
 - Refactored AMD Shader Cache Handling
 - Added String Support for Shader Cache Handling

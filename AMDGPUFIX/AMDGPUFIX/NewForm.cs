@@ -12,6 +12,7 @@ namespace AMDGPUFIX
         public readonly MaterialSkinManager materialSkinManager;
         private static GPUDetection GPUDetection = new GPUDetection();
         UIHandles UIHandles = new UIHandles();
+        TooltipHelper TooltipHelper = new TooltipHelper();
         bool AppStarted = false;
         // End Globals
 
@@ -33,6 +34,8 @@ namespace AMDGPUFIX
             DVRHandling();
             // GPU Driver Handling
             GPUDriverHandling();
+            // Add Tooltips
+            TooltipHelper.InitializeTooltips(this);
             // Force Layout Update
             flowLayoutPanel1.PerformLayout();
             this.PerformLayout();
@@ -102,7 +105,7 @@ namespace AMDGPUFIX
 
         // Reboot Button
         private void materialFloatingActionButton2_Click(object sender, EventArgs e) =>
-            Process.Start("ShutDown", "/r");
+            UIHandles.ShowRebootConfirmationDialog();
 
         // Open Driver Download Page Button
         private void driverDlButton_Click(object sender, EventArgs e) =>
