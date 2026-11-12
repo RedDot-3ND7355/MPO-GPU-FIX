@@ -75,7 +75,8 @@ namespace AMDGPUFIX
         private static RegistryKey dxnaviKey;
         private static string[] D3DVendorName;
         private static string[] D3DVendorNameWow;
-        public static string PNPDeviceID = "";
+        // PNP ids of every AMD adapter (dual GPU: only these get restarted after a switch)
+        public static List<string> PNPDeviceIDs = new List<string>();
         public static int CurrentDX = -1;
         private static Dictionary<int, bool> DXVerif = new Dictionary<int, bool>()
         {
@@ -102,6 +103,11 @@ namespace AMDGPUFIX
                 MessageBox.Show("Error! DX Navi Switches Could not set registry base path due to lack of permission.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+            // Reset state (the window can be reopened; statics would otherwise pile up)
+            gpu_profiles.Clear();
+            CurrentDX = -1;
+            foreach (int mode in DXVerif.Keys.ToList())
+                DXVerif[mode] = true;
             // Count Profiles
             try
             {
@@ -114,9 +120,9 @@ namespace AMDGPUFIX
                     using (var key = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + profile))
                     {
                         if (key == null) continue;
-                        D3DVendorName = key.GetValue("D3DVendorName") as string[];
-                        D3DVendorNameWow = key.GetValue("D3DVendorNameWow") as string[];
-                        if (D3DVendorName != null && D3DVendorNameWow != null)
+                        // Dual GPU: never touch a profile that belongs to a non-AMD adapter
+                        if (!GpuRegistry.IsAmdProfile(key)) continue;
+                        if (IsValidProfile(key.GetValue("D3DVendorName") as string[], key.GetValue("D3DVendorNameWow") as string[]))
                             gpu_profiles.Add("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\" + profile);
                     }
                 }
@@ -139,69 +145,144 @@ namespace AMDGPUFIX
                 return false;
         }
 
+        // Both value lists must hold the 4 expected driver paths
+        private static bool IsValidProfile(string[] vendorName, string[] vendorNameWow) =>
+            vendorName != null && vendorNameWow != null
+            && vendorName.Length >= 4 && vendorNameWow.Length >= 4
+            && vendorName.Take(4).All(x => !string.IsNullOrEmpty(x))
+            && vendorNameWow.Take(4).All(x => !string.IsNullOrEmpty(x));
+
+        // Read both value lists of a profile, false if the profile is unusable
+        private static bool ReadProfile(string profile, out string[] vendorName, out string[] vendorNameWow)
+        {
+            vendorName = null;
+            vendorNameWow = null;
+            using (var key = localMachine.OpenSubKey(profile))
+            {
+                if (key == null) return false;
+                vendorName = key.GetValue("D3DVendorName") as string[];
+                vendorNameWow = key.GetValue("D3DVendorNameWow") as string[];
+            }
+            return IsValidProfile(vendorName, vendorNameWow);
+        }
+
+        // Driver file names used by each mode: { DX9 64bit, DX11 64bit, DX9 32bit, DX11 32bit }
+        private static readonly string[][] ModeFiles =
+        {
+            new[] { "atiumd64.dll", "atidxx64.dll", "atiumdag.dll", "atidxx32.dll" }, // 0 Regular DX
+            new[] { "atiumd64.dll", "amdxx64.dll", "atiumdag.dll", "amdxx32.dll" },   // 1 Regular DX9 with DX11 NAVI
+            new[] { "amdxn64.dll", "atidxx64.dll", "amdxn32.dll", "atidxx32.dll" },   // 2 DX9 NAVI with Regular DX11
+            new[] { "amdxn64.dll", "amdxx64.dll", "amdxn32.dll", "amdxx32.dll" }      // 3 Full DXNAVI
+        };
+
+        // Are the driver files of a mode installed for this profile?
+        private static bool ModeAvailable(int mode, string[] vendorName, string[] vendorNameWow)
+        {
+            string[] files = ModeFiles[mode];
+            return File.Exists(Path.GetDirectoryName(vendorName[0]) + "\\" + files[0])
+                && File.Exists(Path.GetDirectoryName(vendorName[3]) + "\\" + files[1])
+                && File.Exists(Path.GetDirectoryName(vendorNameWow[0]) + "\\" + files[2])
+                && File.Exists(Path.GetDirectoryName(vendorNameWow[3]) + "\\" + files[3]);
+        }
+
+        // Mode a profile is currently set to, -1 if unknown
+        private static int ModeOf(string[] vendorName, string[] vendorNameWow)
+        {
+            int found = -1;
+            for (int mode = 0; mode < ModeFiles.Length; mode++)
+            {
+                string[] files = ModeFiles[mode];
+                if (vendorName[0].Contains(files[0]) && vendorName[3].Contains(files[1])
+                    && vendorNameWow[0].Contains(files[2]) && vendorNameWow[3].Contains(files[3]))
+                    found = mode;
+            }
+            return found;
+        }
+
+        // A mode is offered when at least one AMD adapter has its files
+        // (dual AMD: adapters on different driver packages are verified one by one when switching)
         private static void DetectAvailable()
         {
-            // Check Regular DX9
-            if (!File.Exists(Path.GetDirectoryName(D3DVendorName[0]) + "\\atiumd64.dll") || !File.Exists(Path.GetDirectoryName(D3DVendorName[3]) + "\\atidxx64.dll") || !File.Exists(Path.GetDirectoryName(D3DVendorNameWow[0]) + "\\atiumdag.dll") || !File.Exists(Path.GetDirectoryName(D3DVendorNameWow[3]) + "\\atidxx32.dll"))
+            foreach (int mode in DXVerif.Keys.ToList())
+                DXVerif[mode] = false;
+            foreach (string profile in gpu_profiles)
             {
-                DXVerif[0] = false;
-            }
-            // Check Regular DX9 with Navi 11
-            if (!File.Exists(Path.GetDirectoryName(D3DVendorName[0]) + "\\atiumd64.dll") || !File.Exists(Path.GetDirectoryName(D3DVendorName[3]) + "\\amdxx64.dll") || !File.Exists(Path.GetDirectoryName(D3DVendorNameWow[0]) + "\\atiumdag.dll") || !File.Exists(Path.GetDirectoryName(D3DVendorNameWow[3]) + "\\amdxx32.dll"))
-            {
-                DXVerif[1] = false;
-            }
-            // Check Navi DX9 with Regular 11
-            if (!File.Exists(Path.GetDirectoryName(D3DVendorName[0]) + "\\amdxn64.dll") || !File.Exists(Path.GetDirectoryName(D3DVendorName[3]) + "\\atidxx64.dll") || !File.Exists(Path.GetDirectoryName(D3DVendorNameWow[0]) + "\\amdxn32.dll") || !File.Exists(Path.GetDirectoryName(D3DVendorNameWow[3]) + "\\atidxx32.dll"))
-            {
-                DXVerif[2] = false;
-            }
-            // Check Full Navi
-            if (!File.Exists(Path.GetDirectoryName(D3DVendorName[0]) + "\\amdxn64.dll") || !File.Exists(Path.GetDirectoryName(D3DVendorName[3]) + "\\amdxx64.dll") || !File.Exists(Path.GetDirectoryName(D3DVendorNameWow[0]) + "\\amdxn32.dll") || !File.Exists(Path.GetDirectoryName(D3DVendorNameWow[3]) + "\\amdxx32.dll"))
-            {
-                DXVerif[3] = false;
+                if (!ReadProfile(profile, out string[] vendorName, out string[] vendorNameWow)) continue;
+                for (int mode = 0; mode < ModeFiles.Length; mode++)
+                    if (ModeAvailable(mode, vendorName, vendorNameWow))
+                        DXVerif[mode] = true;
             }
         }
 
+        // Current mode = mode of the first AMD profile that reports a known one
         private static void DetectCurrent()
         {
             CurrentDX = -1;
-            // Check Regular DX9
-            if (D3DVendorName[0].Contains("atiumd64.dll") && D3DVendorName[3].Contains("atidxx64.dll") && D3DVendorNameWow[0].Contains("atiumdag.dll") && D3DVendorNameWow[3].Contains("atidxx32.dll"))
+            foreach (string profile in gpu_profiles)
             {
-                CurrentDX = 0;
-            }
-            // Check Regular DX9 with Navi 11
-            if (D3DVendorName[0].Contains("atiumd64.dll") && D3DVendorName[3].Contains("amdxx64.dll") && D3DVendorNameWow[0].Contains("atiumdag.dll") && D3DVendorNameWow[3].Contains("amdxx32.dll"))
-            {
-                CurrentDX = 1;
-            }
-            // Check Navi DX9 with Regular 11
-            if (D3DVendorName[0].Contains("amdxn64.dll") && D3DVendorName[3].Contains("atidxx64.dll") && D3DVendorNameWow[0].Contains("amdxn32.dll") && D3DVendorNameWow[3].Contains("atidxx32.dll"))
-            {
-                CurrentDX = 2;
-            }
-            // Check Full Navi
-            if (D3DVendorName[0].Contains("amdxn64.dll") && D3DVendorName[3].Contains("amdxx64.dll") && D3DVendorNameWow[0].Contains("amdxn32.dll") && D3DVendorNameWow[3].Contains("amdxx32.dll"))
-            {
-                CurrentDX = 3;
+                if (!ReadProfile(profile, out string[] vendorName, out string[] vendorNameWow)) continue;
+                D3DVendorName = vendorName;
+                D3DVendorNameWow = vendorNameWow;
+                int mode = ModeOf(vendorName, vendorNameWow);
+                if (mode == -1) continue;
+                CurrentDX = mode;
+                return;
             }
         }
 
-        // Restart GPU Adapter
-        private static void RestartPNPDeviceByID()
+        // Restart the AMD adapter(s) whose profile was changed
+        private static void RestartPNPDeviceByID(List<string> changedProfiles)
         {
-            if (LastDX != CurrentDX)
+            if (changedProfiles.Count > 0)
             {
+                // Dual GPU: map each AMD adapter to its class profile and only restart the changed ones.
+                // If the mapping can't be resolved, restart every AMD adapter.
+                List<string> targets = new List<string>();
+                foreach (string id in PNPDeviceIDs)
+                {
+                    string deviceProfile = GpuRegistry.GetProfileForDevice(localMachine, id);
+                    if (deviceProfile != "" && changedProfiles.Any(p => p.EndsWith("\\" + deviceProfile, StringComparison.OrdinalIgnoreCase)))
+                        targets.Add(id);
+                }
+                if (targets.Count == 0)
+                    targets = PNPDeviceIDs.ToList();
+                if (targets.Count == 0)
+                {
+                    MessageBox.Show("Failed to restart adapter, please reboot to apply changes!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 MessageBox.Show("GPU Adapter will be restarted! Save any unsaved projects to prevent any loss of data.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                System.Diagnostics.Process process = new System.Diagnostics.Process();
-                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
-                startInfo.WorkingDirectory = Environment.SystemDirectory;
-                startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-                startInfo.FileName = "cmd.exe";
-                startInfo.Arguments = "/C C:\\Windows\\SysNative\\PNPUTIL /restart-device \"" + PNPDeviceID + "\"";
-                process.StartInfo = startInfo;
-                if (process.Start())
+                // SysNative only exists for 32bit processes on 64bit Windows
+                string windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+                string pnputil = Path.Combine(windows, "SysNative", "pnputil.exe");
+                if (!File.Exists(pnputil))
+                    pnputil = Path.Combine(windows, "System32", "pnputil.exe");
+                bool started = true;
+                foreach (string id in targets)
+                {
+                    try
+                    {
+                        System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+                        startInfo.WorkingDirectory = Environment.SystemDirectory;
+                        startInfo.UseShellExecute = false;
+                        startInfo.CreateNoWindow = true;
+                        startInfo.FileName = pnputil;
+                        startInfo.Arguments = "/restart-device \"" + id + "\"";
+                        using (System.Diagnostics.Process process = System.Diagnostics.Process.Start(startInfo))
+                        {
+                            if (process == null)
+                                started = false;
+                            else
+                                process.WaitForExit(15000); // one adapter at a time
+                        }
+                    }
+                    catch
+                    {
+                        started = false;
+                    }
+                }
+                if (started)
                     MessageBox.Show("Changes applied successfully!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 else
                     MessageBox.Show("Failed to restart adapter, please reboot to apply changes!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -210,6 +291,32 @@ namespace AMDGPUFIX
             {
                 MessageBox.Show("Changes reverted to prevent any issues due to missing driver files for selected profile OR selected profile is already in use.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+        }
+
+        // Switch every AMD profile to the desired mode (each one from its own current mode)
+        private static void ApplyMode(int desiredDx)
+        {
+            List<string> changedProfiles = new List<string>();
+            foreach (string profile in gpu_profiles)
+            {
+                if (!ReadProfile(profile, out string[] vendorName, out string[] vendorNameWow)) continue;
+                int profileDx = ModeOf(vendorName, vendorNameWow);
+                if (profileDx == -1 || profileDx == desiredDx) continue;
+                // Mod both first, so 32bit and 64bit never end up on different modes
+                string[] newWow = Switcher(vendorNameWow, profileDx, desiredDx, "D3DVendorNameWow");
+                string[] newName = Switcher(vendorName, profileDx, desiredDx, "D3DVendorName");
+                if (newWow.SequenceEqual(vendorNameWow) || newName.SequenceEqual(vendorName)) continue; // missing files
+                using (RegistryKey key = localMachine.OpenSubKey(profile, writable: true))
+                {
+                    if (key == null) continue;
+                    key.SetValue("D3DVendorNameWow", newWow, RegistryValueKind.MultiString);
+                    key.SetValue("D3DVendorName", newName, RegistryValueKind.MultiString);
+                }
+                changedProfiles.Add(profile);
+            }
+            DetectCurrent();
+            // Restart Adapter
+            RestartPNPDeviceByID(changedProfiles);
         }
 
         private static string[] Switcher(string[] value, int CurrDx, int DesiredDx, string D3DObj)
@@ -466,83 +573,15 @@ namespace AMDGPUFIX
         }
 
         // Full Navi
-        public static void SetFullNavi()
-        {
-            foreach (string profile in gpu_profiles)
-            {
-                dxnaviKey = localMachine.OpenSubKey(profile, writable: true);
-                // Set 32bit (get, mod, apply)
-                D3DVendorNameWow = (string[])dxnaviKey.GetValue("D3DVendorNameWow");
-                D3DVendorNameWow = Switcher(D3DVendorNameWow, CurrentDX, 3, "D3DVendorNameWow");
-                dxnaviKey.SetValue("D3DVendorNameWow", D3DVendorNameWow, RegistryValueKind.MultiString);
-                // Set 64bit
-                D3DVendorName = (string[])dxnaviKey.GetValue("D3DVendorName");
-                D3DVendorName = Switcher(D3DVendorName, CurrentDX, 3, "D3DVendorName");
-                dxnaviKey.SetValue("D3DVendorName", D3DVendorName, RegistryValueKind.MultiString);
-            }
-            DetectCurrent();
-            // Restart Adapter
-            RestartPNPDeviceByID();
-        }
+        public static void SetFullNavi() => ApplyMode(3);
 
         // Regular DX9 with DX11 Navi
-        public static void SetRDX9WDX11Navi()
-        {
-            foreach (string profile in gpu_profiles)
-            {
-                dxnaviKey = localMachine.OpenSubKey(profile, writable: true);
-                // Set 32bit (get, mod, apply)
-                D3DVendorNameWow = (string[])dxnaviKey.GetValue("D3DVendorNameWow");
-                D3DVendorNameWow = Switcher(D3DVendorNameWow, CurrentDX, 1, "D3DVendorNameWow");
-                dxnaviKey.SetValue("D3DVendorNameWow", D3DVendorNameWow, RegistryValueKind.MultiString);
-                // Set 64bit
-                D3DVendorName = (string[])dxnaviKey.GetValue("D3DVendorName");
-                D3DVendorName = Switcher(D3DVendorName, CurrentDX, 1, "D3DVendorName");
-                dxnaviKey.SetValue("D3DVendorName", D3DVendorName, RegistryValueKind.MultiString);
-            }
-            DetectCurrent();
-            // Restart Adapter
-            RestartPNPDeviceByID();
-        }
+        public static void SetRDX9WDX11Navi() => ApplyMode(1);
 
         // Navi DX9 with regular DX11
-        public static void SetDX9NaviWRDX11()
-        {
-            foreach (string profile in gpu_profiles)
-            {
-                dxnaviKey = localMachine.OpenSubKey(profile, writable: true);
-                // Set 32bit (get, mod, apply)
-                D3DVendorNameWow = (string[])dxnaviKey.GetValue("D3DVendorNameWow");
-                D3DVendorNameWow = Switcher(D3DVendorNameWow, CurrentDX, 2, "D3DVendorNameWow");
-                dxnaviKey.SetValue("D3DVendorNameWow", D3DVendorNameWow, RegistryValueKind.MultiString);
-                // Set 64bit
-                D3DVendorName = (string[])dxnaviKey.GetValue("D3DVendorName");
-                D3DVendorName = Switcher(D3DVendorName, CurrentDX, 2, "D3DVendorName");
-                dxnaviKey.SetValue("D3DVendorName", D3DVendorName, RegistryValueKind.MultiString);
-            }
-            DetectCurrent();
-            // Restart Adapter
-            RestartPNPDeviceByID();
-        }
+        public static void SetDX9NaviWRDX11() => ApplyMode(2);
 
         // Regular DX9
-        public static void RegularDX9()
-        {
-            foreach (string profile in gpu_profiles)
-            {
-                dxnaviKey = localMachine.OpenSubKey(profile, writable: true);
-                // Set 32bit (get, mod, apply)
-                D3DVendorNameWow = (string[])dxnaviKey.GetValue("D3DVendorNameWow");
-                D3DVendorNameWow = Switcher(D3DVendorNameWow, CurrentDX, 0, "D3DVendorNameWow");
-                dxnaviKey.SetValue("D3DVendorNameWow", D3DVendorNameWow, RegistryValueKind.MultiString);
-                // Set 64bit
-                D3DVendorName = (string[])dxnaviKey.GetValue("D3DVendorName");
-                D3DVendorName = Switcher(D3DVendorName, CurrentDX, 0, "D3DVendorName");
-                dxnaviKey.SetValue("D3DVendorName", D3DVendorName, RegistryValueKind.MultiString);
-            }
-            DetectCurrent();
-            // Restart Adapter
-            RestartPNPDeviceByID();
-        }
+        public static void RegularDX9() => ApplyMode(0);
     }
 }

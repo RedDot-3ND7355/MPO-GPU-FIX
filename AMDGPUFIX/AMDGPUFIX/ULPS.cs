@@ -26,6 +26,9 @@ namespace AMDGPUFIX
                     foreach (var profile in profiles)
                     {
                         string profilePath = $"{basePath}\\{profile}";
+                        // Dual GPU: skip profiles that belong to a non-AMD adapter
+                        using var profileKey = localMachine.OpenSubKey(profilePath);
+                        if (!GpuRegistry.IsAmdProfile(profileKey)) continue;
                         using var checkKey = localMachine.OpenSubKey($"{profilePath}\\UMD");
                         if (checkKey != null) ulps_profiles.Add(profilePath);
                     }

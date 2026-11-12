@@ -60,6 +60,20 @@ namespace AMDGPUFIX
         public IReadOnlyList<GpuAdapter> Adapters => _adapters;
         public GpuAdapter SelectedAdapter { get; private set; }
 
+        // ── Dual / multi GPU surface ───────────────────────────────────────────
+        /// <summary>Every GPU to show in the UI, primary first (never empty once a GPU was found).</summary>
+        public IReadOnlyList<GpuAdapter> DisplayAdapters => _displayAdapters;
+
+        /// <summary>Real, enabled AMD adapters (targets of ULPS / Shader Cache / DXMOD).</summary>
+        public IEnumerable<GpuAdapter> AmdAdapters =>
+            _adapters.Where(a => a.Vendor == GpuVendor.AMD && a.IsEnabled && !a.IsVirtual);
+
+        /// <summary>Driver download pages, one per GPU brand in the system (label, url).</summary>
+        public IReadOnlyList<KeyValuePair<string, string>> DriverUrls => _driverUrls;
+
+        private readonly List<GpuAdapter> _displayAdapters = new();
+        private readonly List<KeyValuePair<string, string>> _driverUrls = new();
+
         private readonly List<GpuAdapter> _adapters = new();
 
         // PCI vendor IDs (lowercase hex, no 0x)
@@ -148,10 +162,11 @@ namespace AMDGPUFIX
         public string[] LoadGPUDriverVer()
         {
             _adapters.Clear();
+            _displayAdapters.Clear();
             SelectedAdapter = null;
             GPUName = "Unknown";
             GPUVersion = "???";
-            DXHandler.PNPDeviceID = "";
+            DXHandler.PNPDeviceIDs.Clear();
 
             if (!TryQueryVideoControllers(out string errorDetail))
             {
@@ -173,7 +188,6 @@ namespace AMDGPUFIX
                 GPUVersion = string.IsNullOrWhiteSpace(SelectedAdapter.DriverVersion)
                     ? "???"
                     : SelectedAdapter.DriverVersion;
-                DXHandler.PNPDeviceID = SelectedAdapter.PnpDeviceId ?? "";
             }
             else if (_adapters.Count > 0)
             {
@@ -181,8 +195,25 @@ namespace AMDGPUFIX
                 GpuAdapter fallback = _adapters.OrderByDescending(a => a.Score).First();
                 GPUName = fallback.Name;
                 GPUVersion = fallback.DriverVersion;
-                DXHandler.PNPDeviceID = fallback.PnpDeviceId ?? "";
                 SelectedAdapter = fallback;
+            }
+
+            // Dual GPU: list every usable adapter, primary first
+            if (SelectedAdapter != null)
+            {
+                _displayAdapters.Add(SelectedAdapter);
+                _displayAdapters.AddRange(_adapters
+                    .Where(a => a.IsUsable && !ReferenceEquals(a, SelectedAdapter))
+                    .OrderByDescending(a => a.Score)
+                    .ThenBy(a => a.IsIntegrated));
+            }
+
+            // DXMOD only edits AMD driver profiles, so those are the adapters it has to restart —
+            // not whichever GPU happens to be primary (e.g. the NVIDIA card of an AMD + NVIDIA box).
+            foreach (GpuAdapter amd in AmdAdapters)
+            {
+                if (!string.IsNullOrEmpty(amd.PnpDeviceId))
+                    DXHandler.PNPDeviceIDs.Add(amd.PnpDeviceId);
             }
 
             return new[] { GPUName, GPUVersion };
@@ -283,23 +314,39 @@ namespace AMDGPUFIX
                     urlVendor = GpuVendor.AMD;
             }
 
-            switch (urlVendor)
+            url = DriverUrlFor(urlVendor);
+            disableDlDrivers = string.IsNullOrEmpty(url);
+
+            // Dual GPU: one download page per brand present, primary brand first
+            _driverUrls.Clear();
+            IEnumerable<GpuVendor> vendors = new[] { urlVendor }
+                .Concat(_displayAdapters.Where(a => a.IsUsable).Select(a => a.Vendor))
+                .Distinct();
+            foreach (GpuVendor vendor in vendors)
             {
-                case GpuVendor.AMD:
-                    url = "https://www.amd.com/en/support";
-                    break;
-                case GpuVendor.Nvidia:
-                    url = "https://www.nvidia.com/Download/index.aspx";
-                    break;
-                case GpuVendor.Intel:
-                    url = "https://www.intel.com/content/www/us/en/download-center/home.html";
-                    break;
-                default:
-                    url = string.Empty;
-                    disableDlDrivers = true;
-                    break;
+                string vendorUrl = DriverUrlFor(vendor);
+                if (!string.IsNullOrEmpty(vendorUrl))
+                    _driverUrls.Add(new KeyValuePair<string, string>(VendorLabel(vendor), vendorUrl));
             }
         }
+
+        private static string DriverUrlFor(GpuVendor vendor)
+        {
+            switch (vendor)
+            {
+                case GpuVendor.AMD:
+                    return "https://www.amd.com/en/support";
+                case GpuVendor.Nvidia:
+                    return "https://www.nvidia.com/Download/index.aspx";
+                case GpuVendor.Intel:
+                    return "https://www.intel.com/content/www/us/en/download-center/home.html";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private static string VendorLabel(GpuVendor vendor) =>
+            vendor == GpuVendor.Nvidia ? "NVIDIA" : vendor.ToString();
 
         // ── Parsing ────────────────────────────────────────────────────────────
 

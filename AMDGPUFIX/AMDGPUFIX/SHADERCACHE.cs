@@ -43,6 +43,9 @@ namespace AMDGPUFIX
                         foreach (var profile in key.GetSubKeyNames().Where(x => x.Length == 4 && x.All(char.IsDigit)))
                         {
                             string umdPath = $"{reg_path_to}\\Control\\Class\\{ClassGuid}\\{profile}\\UMD";
+                            // Dual GPU: skip profiles that belong to a non-AMD adapter
+                            using (var profileKey = localMachine.OpenSubKey($"{reg_path_to}\\Control\\Class\\{ClassGuid}\\{profile}"))
+                                if (!GpuRegistry.IsAmdProfile(profileKey)) continue;
                             using (var checkKey = localMachine.OpenSubKey(umdPath))
                                 if (checkKey != null) gpu_profiles.Add(umdPath);
                         }
@@ -65,6 +68,7 @@ namespace AMDGPUFIX
             RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64)
                                      ?? RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
 
+            bool missingValue = false;
             foreach (string profile in gpu_profiles)
             {
                 using (RegistryKey shadercacheKey = localMachine.OpenSubKey(profile, writable: true))
@@ -74,8 +78,9 @@ namespace AMDGPUFIX
                     object rawValue = shadercacheKey.GetValue("ShaderCache");
                     if (rawValue == null)
                     {
-                        MessageBox.Show("No ShaderCache profile has been set, using AMD Optimized as default value.\r\nDriver update removed this value.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        return 1; // Default
+                        // Dual GPU: another AMD adapter's profile may still hold the value
+                        missingValue = true;
+                        continue;
                     }
 
                     var valueKind = shadercacheKey.GetValueKind("ShaderCache");
@@ -126,6 +131,12 @@ namespace AMDGPUFIX
                     MessageBox.Show($"Unsupported ShaderCache value type: {valueKind}\r\nPlease report this to RedDot3ND on GitHub.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return -1;
                 }
+            }
+
+            if (missingValue)
+            {
+                MessageBox.Show("No ShaderCache profile has been set, using AMD Optimized as default value.\r\nDriver update removed this value.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return 1; // Default
             }
 
             return -1; // No valid values detected

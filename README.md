@@ -44,6 +44,11 @@ Check out the WIKI for more info: https://github.com/RedDot-3ND7355/MPO-GPU-FIX/
 Already Disabled MPO and still getting performance issues and such?
 Head here: https://github.com/RedDot-3ND7355/MPO-GPU-FIX/wiki/Still-getting-issues%3F
 
+Dual / multi GPU systems (iGPU + dGPU, AMD + NVIDIA, 2x AMD, ...) are supported:
+- Every detected GPU and its driver version is listed
+- The download button lets you pick the driver page of each GPU brand
+- AMD tweaks (ULPS / SHADER CACHE / DX MOD) only touch the AMD adapter(s), other brands are left alone
+
 What this tool does:
 - Checks your GPU Name in use
 - Checks your GPU Driver version

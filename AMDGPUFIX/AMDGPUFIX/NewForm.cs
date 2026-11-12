@@ -1,7 +1,11 @@
 ﻿using ReaLTaiizor.Forms;
 using ReaLTaiizor.Manager;
+using ReaLTaiizor.Controls;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace AMDGPUFIX
@@ -48,6 +52,74 @@ namespace AMDGPUFIX
             return GPUDetection.GPUName;
         }
 
+        // Names of every AMD GPU in the system (dual GPU: primary may be another brand)
+        public static string[] GetAmdGpuNames()
+        {
+            return GPUDetection.AmdAdapters.Select(a => a.Name).ToArray();
+        }
+
+        // Dual GPU: one "GPU n / Driver n" block per adapter, stacked under the first one
+        private void ShowGpuInfo(string[] primaryInfo)
+        {
+            IReadOnlyList<GpuAdapter> adapters = GPUDetection.DisplayAdapters;
+            if (adapters.Count < 2)
+            {
+                gpuName.Text += " " + primaryInfo[0];
+                gpuVersion.Text += " " + primaryInfo[1];
+                return;
+            }
+
+            // Vertical distance between two GPU blocks (name + driver line + small gap)
+            int blockHeight = (gpuVersion.Top - gpuName.Top) * 2 + 4;
+            for (int i = 0; i < adapters.Count; i++)
+            {
+                string nameText = $"GPU {i + 1}: {adapters[i].Name}";
+                string versionText = $"GPU {i + 1} Driver: {adapters[i].DriverVersion}";
+                if (i == 0)
+                {
+                    gpuName.Text = nameText;
+                    gpuVersion.Text = versionText;
+                    continue;
+                }
+                materialCard1.Controls.Add(CloneInfoLabel(gpuName, nameText, i * blockHeight));
+                materialCard1.Controls.Add(CloneInfoLabel(gpuVersion, versionText, i * blockHeight));
+            }
+        }
+
+        private static MaterialLabel CloneInfoLabel(MaterialLabel source, string text, int offsetY)
+        {
+            return new MaterialLabel
+            {
+                AutoSize = true,
+                Depth = source.Depth,
+                Font = source.Font,
+                FontType = source.FontType,
+                Location = new Point(source.Left, source.Top + offsetY),
+                MouseState = source.MouseState,
+                Text = text
+            };
+        }
+
+        // Dual GPU with two brands: let the user pick which driver page to open
+        private void ShowDriverMenu()
+        {
+            var urls = GPUDetection.DriverUrls;
+            if (urls.Count < 2)
+            {
+                UIHandles.OpenURL(GPUDetection.url);
+                return;
+            }
+
+            var menu = new MaterialContextMenuStrip();
+            foreach (KeyValuePair<string, string> entry in urls)
+            {
+                string target = entry.Value;
+                menu.Items.Add($"{entry.Key} drivers", null, (s, e) => UIHandles.OpenURL(target));
+            }
+            menu.Closed += (s, e) => BeginInvoke(new Action(menu.Dispose));
+            menu.Show(driverDlButton, new Point(0, driverDlButton.Height));
+        }
+
         // GPU Driver Tweaks Handling
         private void GPUDriverHandling()
         {
@@ -80,8 +152,7 @@ namespace AMDGPUFIX
         private void GPUDetect()
         {
             string[] gpuInfo = GPUDetection.LoadGPUDriverVer();
-            gpuName.Text += " " + gpuInfo[0];
-            gpuVersion.Text += " " + gpuInfo[1];
+            ShowGpuInfo(gpuInfo);
             GPUDetection.BrandCompare();
             // UNK Flag
             driverDlButton.Enabled = !GPUDetection.disableDlDrivers;
@@ -109,7 +180,7 @@ namespace AMDGPUFIX
 
         // Open Driver Download Page Button
         private void driverDlButton_Click(object sender, EventArgs e) =>
-            UIHandles.OpenURL(GPUDetection.url);
+            ShowDriverMenu();
 
         // Donate Button
         private void materialButton6_Click(object sender, EventArgs e) =>

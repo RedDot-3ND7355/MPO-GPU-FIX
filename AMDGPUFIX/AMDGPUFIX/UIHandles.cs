@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace AMDGPUFIX
@@ -155,9 +156,9 @@ namespace AMDGPUFIX
         // ULPS Switcher
         public void ULPSHandler(bool enable)
         {
-            string GPUName = NewForm.GetGPUName();
+            // Dual GPU: check every AMD adapter, the primary GPU may be another brand
             // Parentheses matter: only block *disabling* ULPS on 9000-series, not every toggle
-            if (!enable && IsAmd9000Series(GPUName))
+            if (!enable && NewForm.GetAmdGpuNames().Any(IsAmd9000Series))
             {
                 MessageBox.Show("Disabling ULPS may cause system instabilities on AMD 9000 Series GPU. Monitor your system after enabling and disable if you encounter any instability.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
