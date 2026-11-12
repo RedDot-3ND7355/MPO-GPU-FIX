@@ -369,10 +369,10 @@ namespace AMDGPUFIX
                          && pnp.StartsWith("PCI\\", StringComparison.OrdinalIgnoreCase);
 
             ushort errorCode = GetUInt16(mo, "ConfigManagerErrorCode");
-            ushort availability = GetUInt16(mo, "Availability");
-            // 0 = OK; 22 = device disabled. Availability 8 = offline.
-            // If Availability is missing/0, don't treat as offline (GetUInt16 returns 0 on failure).
-            bool enabled = errorCode == 0 && availability != 8;
+            // 0 = OK; 22 = device disabled.
+            // Availability is deliberately ignored: a second GPU with no monitor attached reports
+            // 8 (offline) while working fine, which used to hide it on dual GPU systems.
+            bool enabled = errorCode == 0;
 
             ulong ram = GetUInt64(mo, "AdapterRAM");
 
