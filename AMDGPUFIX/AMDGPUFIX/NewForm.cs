@@ -28,6 +28,8 @@ namespace AMDGPUFIX
             materialSkinManager.EnforceBackcolorOnAllComponents = true;
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
+            // Build marker, tells test builds apart
+            Text += " [dual 3]";
             // Admin Check
             AdminHandles.CheckIsAdminRights();
             // GPU Handling

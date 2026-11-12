@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Management;
+using System.Runtime.InteropServices;
+using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -175,6 +177,9 @@ namespace AMDGPUFIX
                 HandleWmiFailure(errorDetail);
                 return new[] { "", "" };
             }
+
+            // Dual GPU: WMI can leave out a second card, so add any present display adapter it missed
+            AddAdaptersMissedByWmi();
 
             // Score & choose
             foreach (GpuAdapter adapter in _adapters)
@@ -363,11 +368,6 @@ namespace AMDGPUFIX
             string installedDrivers = GetString(mo, "InstalledDisplayDrivers");
             string videoProcessor = GetString(mo, "VideoProcessor");
 
-            ParsePciIds(pnp, out string ven, out string dev);
-
-            bool isPci = !string.IsNullOrEmpty(pnp)
-                         && pnp.StartsWith("PCI\\", StringComparison.OrdinalIgnoreCase);
-
             ushort errorCode = GetUInt16(mo, "ConfigManagerErrorCode");
             // 0 = OK; 22 = device disabled.
             // Availability is deliberately ignored: a second GPU with no monitor attached reports
@@ -375,6 +375,17 @@ namespace AMDGPUFIX
             bool enabled = errorCode == 0;
 
             ulong ram = GetUInt64(mo, "AdapterRAM");
+
+            return BuildAdapter(name, driverVersion, pnp, installedDrivers, videoProcessor, enabled, ram);
+        }
+
+        private static GpuAdapter BuildAdapter(string name, string driverVersion, string pnp,
+            string installedDrivers, string videoProcessor, bool enabled, ulong ram)
+        {
+            ParsePciIds(pnp, out string ven, out string dev);
+
+            bool isPci = !string.IsNullOrEmpty(pnp)
+                         && pnp.StartsWith("PCI\\", StringComparison.OrdinalIgnoreCase);
 
             GpuVendor vendor = ResolveVendor(ven, installedDrivers, name, videoProcessor);
             bool isVirtual = vendor == GpuVendor.Virtual
@@ -399,6 +410,87 @@ namespace AMDGPUFIX
                 AdapterRamBytes = ram,
                 DriverServiceName = installedDrivers ?? ""
             };
+        }
+
+        // ── Registry / Config Manager enumeration (dual GPU safety net) ────────
+
+        [DllImport("cfgmgr32.dll", CharSet = CharSet.Unicode)]
+        private static extern int CM_Locate_DevNodeW(out uint pdnDevInst, string pDeviceID, uint ulFlags);
+
+        [DllImport("cfgmgr32.dll")]
+        private static extern int CM_Get_DevNode_Status(out uint pulStatus, out uint pulProblemNumber, uint dnDevInst, uint ulFlags);
+
+        /// <summary>
+        /// Walks HKLM\SYSTEM\CurrentControlSet\Enum\PCI for display-class devices that are physically
+        /// present right now and adds the ones Win32_VideoController did not return.
+        /// </summary>
+        private void AddAdaptersMissedByWmi()
+        {
+            try
+            {
+                using RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                using RegistryKey pci = localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Enum\\PCI");
+                if (pci == null)
+                    return;
+
+                foreach (string hardwareId in pci.GetSubKeyNames())
+                {
+                    using RegistryKey hardwareKey = pci.OpenSubKey(hardwareId);
+                    if (hardwareKey == null)
+                        continue;
+
+                    foreach (string instance in hardwareKey.GetSubKeyNames())
+                    {
+                        try
+                        {
+                            using RegistryKey device = hardwareKey.OpenSubKey(instance);
+                            string classGuid = device?.GetValue("ClassGUID")?.ToString() ?? "";
+                            if (!classGuid.Equals(GpuRegistry.ClassGuid, StringComparison.OrdinalIgnoreCase))
+                                continue;
+
+                            string pnp = $"PCI\\{hardwareId}\\{instance}";
+                            if (_adapters.Any(a => string.Equals(a.PnpDeviceId, pnp, StringComparison.OrdinalIgnoreCase)))
+                                continue;
+
+                            // Fails for cards that were removed but still have a registry entry
+                            if (CM_Locate_DevNodeW(out uint devInst, pnp, 0) != 0)
+                                continue;
+                            bool enabled = CM_Get_DevNode_Status(out _, out uint problem, devInst, 0) == 0 && problem == 0;
+
+                            // "{4d36e968-...}\0001" → driver profile of this card
+                            string driver = device.GetValue("Driver")?.ToString() ?? "";
+                            using RegistryKey profile = string.IsNullOrEmpty(driver)
+                                ? null
+                                : localMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\" + driver);
+
+                            string name = profile?.GetValue("DriverDesc")?.ToString();
+                            if (string.IsNullOrWhiteSpace(name))
+                            {
+                                // "@oem12.inf,%id%;AMD Radeon RX 6700 XT"
+                                name = device.GetValue("DeviceDesc")?.ToString() ?? "";
+                                name = name.Substring(name.LastIndexOf(';') + 1);
+                            }
+                            if (string.IsNullOrWhiteSpace(name))
+                                continue;
+
+                            string driverVersion = profile?.GetValue("DriverVersion")?.ToString() ?? "";
+                            string provider = profile?.GetValue("ProviderName")?.ToString() ?? "";
+                            ulong ram = 0;
+                            try { ram = Convert.ToUInt64(profile?.GetValue("HardwareInformation.qwMemorySize") ?? 0UL); } catch { }
+
+                            _adapters.Add(BuildAdapter(name, driverVersion, pnp, "", provider, enabled, ram));
+                        }
+                        catch
+                        {
+                            // Unreadable device entry: skip it
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Registry not readable: keep what WMI returned
+            }
         }
 
         private static void ParsePciIds(string pnpDeviceId, out string vendorId, out string deviceId)
